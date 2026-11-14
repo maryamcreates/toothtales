@@ -153,6 +153,47 @@
   <footer>Made with 💗 for little smiles</footer>
 
   <script src="script.js"></script>
+
+<!-- TOOTHTALES WORLD -->
+<section id="worldScreen" class="hidden">
+  <div class="world-header">
+    <h1>🦷 ToothTales World</h1>
+    <p>Hello, <span id="worldName">friend</span>! 💗</p>
+    <div class="world-stats">
+      <span>🪙 <span id="coins">0</span></span>
+      <span>🔥 Day <span id="streak">1</span></span>
+    </div>
+  </div>
+
+  <div class="fairy-card">
+    <div class="fairy">🧚‍♀️</div>
+    <h2>Hi, little star!</h2>
+    <p>I'm your Tooth Fairy! Let's take care of your smile!</p>
+  </div>
+
+  <h2>My brushing lights ✨</h2>
+
+  <div class="brushing-cards">
+    <div class="brush-card">
+      <div class="big-icon">☀️</div>
+      <h3>Morning brushing</h3>
+      <div id="morningLight" class="light">⚪</div>
+      <button onclick="startBrushing('morning')">Brush my teeth!</button>
+    </div>
+
+    <div class="brush-card">
+      <div class="big-icon">🌙</div>
+      <h3>Night brushing</h3>
+      <div id="nightLight" class="light">⚪</div>
+      <button onclick="startBrushing('night')">Brush my teeth!</button>
+    </div>
+  </div>
+
+  <div id="brushMessage">
+    Your magical adventure starts here! 💕
+  </div>
+</section>
+
 </body>
 </html>
 
