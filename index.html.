@@ -1,1 +1,41 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToothTales 🦷</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <h2>🦷 ToothTales</h2>
+    <p>Little smiles, big adventures!</p>
+  </header>
+
+  <main>
+    <div class="tooth">🦷</div>
+
+    <h1>Let's make brushing magical!</h1>
+
+    <p>
+      Join our little tooth friend on a journey
+      to healthy and happy smiles!
+    </p>
+
+    <button id="startButton">
+      Start my adventure! 🚀
+    </button>
+
+    <p id="message">
+      Your smile adventure starts here!
+    </p>
+  </main>
+
+  <footer>Made with 💗 for little smiles</footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
