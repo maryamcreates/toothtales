@@ -423,12 +423,37 @@ footer {
   touch-action: none;
 }
 
+
 .rescue-teeth {
   display: flex;
   justify-content: center;
-  gap: 5px;
-  font-size: 42px;
+  align-items: flex-start;
+  gap: 7px;
+  padding-top: 15px;
 }
+
+.game-tooth {
+  width: 48px;
+  height: 68px;
+  flex-shrink: 1;
+  background: linear-gradient(145deg, #ffffff, #fff9e9);
+  border-radius: 45% 45% 38% 38%;
+  box-shadow: 0 5px 0 #e7cbd6;
+  position: relative;
+}
+
+.game-tooth::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 10px;
+  width: 9px;
+  height: 18px;
+  background: #ffffff;
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
 
 .food-crumbs {
   display: flex;
