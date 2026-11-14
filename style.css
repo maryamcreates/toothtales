@@ -298,3 +298,81 @@ footer {
     max-width: 100%;
   }
 }
+
+/* TOOTHTALES WORLD */
+
+#worldScreen {
+  max-width: 700px;
+  margin: 25px auto;
+  padding: 24px;
+  text-align: center;
+}
+
+.world-header {
+  background: linear-gradient(135deg, #ffd6e7, #e5d9ff);
+  padding: 24px;
+  border-radius: 25px;
+  margin-bottom: 20px;
+}
+
+.world-header h1 {
+  color: #8c69b5;
+}
+
+.world-stats {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  font-size: 18px;
+  margin-top: 15px;
+}
+
+.fairy-card {
+  background: #fff0f6;
+  border-radius: 25px;
+  padding: 22px;
+  margin-bottom: 25px;
+}
+
+.fairy {
+  font-size: 65px;
+  animation: fairyFloat 2s infinite ease-in-out;
+}
+
+@keyframes fairyFloat {
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.brushing-cards {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.brush-card {
+  background: white;
+  border-radius: 22px;
+  padding: 20px;
+  flex: 1;
+  min-width: 220px;
+  box-shadow: 0 5px 15px #e8d9ef;
+}
+
+.big-icon {
+  font-size: 45px;
+}
+
+.light {
+  font-size: 35px;
+  margin: 12px;
+}
+
+#brushMessage {
+  background: #e7f8ee;
+  padding: 18px;
+  border-radius: 18px;
+  margin-top: 22px;
+}
