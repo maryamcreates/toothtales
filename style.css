@@ -475,11 +475,14 @@ footer {
   background: white;
   border-radius: 50%;
   box-shadow: 0 4px 12px #d9c6e8;
-  cursor: grab;
-  touch-action: none;
-  user-select: none;
-  position: relative;
+
+  position: absolute;
+  left: 10px;
+  top: 10px;
   z-index: 5;
+
+  pointer-events: none;
+  user-select: none;
 }
 
 .toothbrush.active {
