@@ -189,25 +189,18 @@ function finishSnack() {
   document.getElementById("rescueDone").disabled = true;
 }
 
+
 const ttBrush = document.getElementById("toothbrush");
+const ttMouth = document.getElementById("rescueMouth");
 
-ttBrush.addEventListener("pointerdown", function(event) {
-  event.preventDefault();
-  ttDraggingBrush = true;
+function moveBrush(event) {
+  const rect = ttMouth.getBoundingClientRect();
 
-  ttBrush.classList.add("active");
-  ttBrush.style.position = "fixed";
-  ttBrush.style.left = event.clientX - 35 + "px";
-  ttBrush.style.top = event.clientY - 35 + "px";
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
 
-  ttBrush.setPointerCapture(event.pointerId);
-});
-
-ttBrush.addEventListener("pointermove", function(event) {
-  if (!ttDraggingBrush) return;
-
-  ttBrush.style.left = event.clientX - 35 + "px";
-  ttBrush.style.top = event.clientY - 35 + "px";
+  ttBrush.style.left = (x - 28) + "px";
+  ttBrush.style.top = (y - 28) + "px";
 
   const brushRect = ttBrush.getBoundingClientRect();
 
@@ -235,6 +228,20 @@ ttBrush.addEventListener("pointermove", function(event) {
       }
     }
   });
+}
+
+ttMouth.addEventListener("pointerdown", function(event) {
+  event.preventDefault();
+  ttDraggingBrush = true;
+  ttMouth.setPointerCapture(event.pointerId);
+  ttBrush.classList.add("active");
+  moveBrush(event);
+});
+
+ttMouth.addEventListener("pointermove", function(event) {
+  if (!ttDraggingBrush) return;
+  event.preventDefault();
+  moveBrush(event);
 });
 
 function ttStopBrush() {
@@ -242,8 +249,9 @@ function ttStopBrush() {
   ttBrush.classList.remove("active");
 }
 
-ttBrush.addEventListener("pointerup", ttStopBrush);
-ttBrush.addEventListener("pointercancel", ttStopBrush);
+ttMouth.addEventListener("pointerup", ttStopBrush);
+ttMouth.addEventListener("pointercancel", ttStopBrush);
+
 
 function finishRescue() {
   if (ttRescuedCount < 3) return;
