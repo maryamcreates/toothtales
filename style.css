@@ -461,3 +461,28 @@ footer {
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+/* INTERACTIVE TOOTHBRUSH */
+
+.toothbrush {
+  font-size: 55px;
+  display: inline-block;
+  padding: 12px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px #d9c6e8;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  position: relative;
+  z-index: 5;
+}
+
+.toothbrush.active {
+  cursor: grabbing;
+  transform: scale(1.15);
+}
+
+.crumb.rescued {
+  transition: all 0.3s ease;
+}
