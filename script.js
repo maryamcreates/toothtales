@@ -144,3 +144,117 @@ function restoreProfile() {
 
 updateAvatar();
 restoreProfile();
+
+// TOOTHTALES: SNACK & RESCUE GAME
+
+let ttSelectedSnack = "";
+let ttRescuedCount = 0;
+let ttActiveSession = "morning";
+let ttDraggingBrush = false;
+
+function startBrushing(session) {
+  ttActiveSession = session;
+
+  document.getElementById("worldScreen").classList.add("hidden");
+  document.getElementById("mealScreen").classList.remove("hidden");
+}
+
+function chooseSnack(snack) {
+  ttSelectedSnack = snack;
+
+  document.getElementById("snackMessage").textContent =
+    "Yummy! You chose " + snack + "! 😋";
+}
+
+function finishSnack() {
+  if (!ttSelectedSnack) {
+    document.getElementById("snackMessage").textContent =
+      "Choose your snack first! 💗";
+    return;
+  }
+
+  document.getElementById("mealScreen").classList.add("hidden");
+  document.getElementById("rescueScreen").classList.remove("hidden");
+
+  ttRescuedCount = 0;
+
+  document.querySelectorAll(".crumb").forEach(crumb => {
+    crumb.classList.remove("rescued");
+  });
+
+  document.getElementById("rescuedCount").textContent = "0";
+  document.getElementById("rescueMessage").textContent =
+    "Let's rescue all the little food pieces! 🪥";
+
+  document.getElementById("rescueDone").disabled = true;
+}
+
+const ttBrush = document.getElementById("toothbrush");
+
+ttBrush.addEventListener("pointerdown", function(event) {
+  event.preventDefault();
+  ttDraggingBrush = true;
+
+  ttBrush.classList.add("active");
+  ttBrush.style.position = "fixed";
+  ttBrush.style.left = event.clientX - 35 + "px";
+  ttBrush.style.top = event.clientY - 35 + "px";
+
+  ttBrush.setPointerCapture(event.pointerId);
+});
+
+ttBrush.addEventListener("pointermove", function(event) {
+  if (!ttDraggingBrush) return;
+
+  ttBrush.style.left = event.clientX - 35 + "px";
+  ttBrush.style.top = event.clientY - 35 + "px";
+
+  const brushRect = ttBrush.getBoundingClientRect();
+
+  document.querySelectorAll(".crumb:not(.rescued)").forEach(crumb => {
+    const foodRect = crumb.getBoundingClientRect();
+
+    const touching =
+      brushRect.left < foodRect.right &&
+      brushRect.right > foodRect.left &&
+      brushRect.top < foodRect.bottom &&
+      brushRect.bottom > foodRect.top;
+
+    if (touching) {
+      crumb.classList.add("rescued");
+      ttRescuedCount++;
+
+      document.getElementById("rescuedCount").textContent =
+        ttRescuedCount;
+
+      if (ttRescuedCount === 3) {
+        document.getElementById("rescueMessage").textContent =
+          "You rescued all the food! Amazing! 🎉";
+
+        document.getElementById("rescueDone").disabled = false;
+      }
+    }
+  });
+});
+
+function ttStopBrush() {
+  ttDraggingBrush = false;
+  ttBrush.classList.remove("active");
+}
+
+ttBrush.addEventListener("pointerup", ttStopBrush);
+ttBrush.addEventListener("pointercancel", ttStopBrush);
+
+function finishRescue() {
+  if (ttRescuedCount < 3) return;
+
+  document.getElementById("rescueScreen").classList.add("hidden");
+  document.getElementById("worldScreen").classList.remove("hidden");
+
+  document.getElementById("brushMessage").textContent =
+    "Amazing rescue! Your teeth are ready for the next adventure! 💗";
+
+  ttBrush.style.position = "";
+  ttBrush.style.left = "";
+  ttBrush.style.top = "";
+}
