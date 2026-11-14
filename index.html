@@ -14,23 +14,140 @@
     <p>Little smiles, big adventures!</p>
   </header>
 
-  <main>
-    <div class="tooth">🦷</div>
+  <main id="app">
 
-    <h1>Let's make brushing magical!</h1>
+    <!-- WELCOME SCREEN -->
+    <section id="welcomeScreen">
+      <div class="tooth">🦷</div>
+      <h1>Let's make brushing magical!</h1>
+      <p>Join our little tooth friend on a journey
+        to healthy and happy smiles!</p>
+      <button id="startButton">Start my adventure! 🚀</button>
+    </section>
 
-    <p>
-      Join our little tooth friend on a journey
-      to healthy and happy smiles!
-    </p>
+    <!-- PROFILE SCREEN -->
+    <section id="profileScreen" class="hidden">
+      <div class="fairy">🧚‍♀️</div>
+      <h1>Welcome, little explorer!</h1>
+      <p>First, tell us a little about yourself.</p>
 
-    <button id="startButton">
-      Start my adventure! 🚀
-    </button>
+      <form id="profileForm">
+        <label for="childName">What's your name?</label>
+        <input id="childName" type="text"
+          maxlength="16" placeholder="Your name..." required>
 
-    <p id="message">
-      Your smile adventure starts here!
-    </p>
+        <label for="childAge">How old are you?</label>
+        <select id="childAge" required>
+          <option value="">Choose your age</option>
+          <option value="3">3 years old</option>
+          <option value="4">4 years old</option>
+          <option value="5">5 years old</option>
+          <option value="6">6 years old</option>
+          <option value="7">7 years old</option>
+          <option value="8">8 years old</option>
+        </select>
+
+        <button type="submit">Let's create my character! ✨</button>
+      </form>
+    </section>
+
+    <!-- CHARACTER CREATOR -->
+    <section id="creatorScreen" class="hidden">
+      <div class="fairy">🧚‍♀️</div>
+      <h1>Meet your new friend!</h1>
+      <p>Let's make a character that looks just like you!</p>
+
+      <div class="avatar" id="avatar">
+        <div class="avatar-hair"></div>
+        <div class="avatar-head">
+          <div class="eyes"><span></span><span></span></div>
+          <div class="smile"></div>
+        </div>
+        <div class="avatar-body"></div>
+        <div class="avatar-shorts"></div>
+        <div class="avatar-legs">
+          <span></span><span></span>
+        </div>
+      </div>
+
+      <div class="creator-options">
+        <h3>🌸 Skin color</h3>
+        <div class="choices">
+          <button type="button" class="color-choice skin active"
+            data-group="skin" data-color="#f5c7a5" style="background:#f5c7a5"></button>
+          <button type="button" class="color-choice skin"
+            data-group="skin" data-color="#dfaa7c" style="background:#dfaa7c"></button>
+          <button type="button" class="color-choice skin"
+            data-group="skin" data-color="#bd805b" style="background:#bd805b"></button>
+          <button type="button" class="color-choice skin"
+            data-group="skin" data-color="#875638" style="background:#875638"></button>
+          <button type="button" class="color-choice skin"
+            data-group="skin" data-color="#633e2e" style="background:#633e2e"></button>
+        </div>
+
+        <h3>💇 Hair color</h3>
+        <div class="choices">
+          <button type="button" class="color-choice active"
+            data-group="hair" data-color="#593b2e" style="background:#593b2e"></button>
+          <button type="button" class="color-choice"
+            data-group="hair" data-color="#241b19" style="background:#241b19"></button>
+          <button type="button" class="color-choice"
+            data-group="hair" data-color="#d6a15e" style="background:#d6a15e"></button>
+          <button type="button" class="color-choice"
+            data-group="hair" data-color="#c66c4e" style="background:#c66c4e"></button>
+          <button type="button" class="color-choice"
+            data-group="hair" data-color="#e8c4a0" style="background:#e8c4a0"></button>
+        </div>
+
+        <h3>👀 Eye color</h3>
+        <div class="choices">
+          <button type="button" class="color-choice active"
+            data-group="eyes" data-color="#65432d" style="background:#65432d"></button>
+          <button type="button" class="color-choice"
+            data-group="eyes" data-color="#4389b9" style="background:#4389b9"></button>
+          <button type="button" class="color-choice"
+            data-group="eyes" data-color="#4b9562" style="background:#4b9562"></button>
+          <button type="button" class="color-choice"
+            data-group="eyes" data-color="#777777" style="background:#777777"></button>
+        </div>
+
+        <h3>👗 Choose an outfit</h3>
+        <div class="outfit-choices">
+          <button type="button" class="outfit-choice active"
+            data-outfit="shirt">👕 Shirt & shorts</button>
+          <button type="button" class="outfit-choice"
+            data-outfit="dress">👗 Dress</button>
+        </div>
+
+        <h3>🎨 Outfit color</h3>
+        <div class="choices">
+          <button type="button" class="color-choice outfit-color active"
+            data-group="outfit" data-color="#a88be0" style="background:#a88be0"></button>
+          <button type="button" class="color-choice outfit-color"
+            data-group="outfit" data-color="#f29eb7" style="background:#f29eb7"></button>
+          <button type="button" class="color-choice outfit-color"
+            data-group="outfit" data-color="#82cdb5" style="background:#82cdb5"></button>
+          <button type="button" class="color-choice outfit-color"
+            data-group="outfit" data-color="#f2c66d" style="background:#f2c66d"></button>
+          <button type="button" class="color-choice outfit-color"
+            data-group="outfit" data-color="#83b8e8" style="background:#83b8e8"></button>
+        </div>
+      </div>
+
+      <button id="finishButton">This is my character! 💗</button>
+    </section>
+
+    <!-- FINISH SCREEN -->
+    <section id="finishScreen" class="hidden">
+      <div class="fairy">🧚‍♀️✨</div>
+      <h1>Welcome to ToothTales!</h1>
+      <div id="finalAvatar" class="avatar"></div>
+      <h2 id="welcomeName"></h2>
+      <p>Your magical adventure is ready to begin!</p>
+      <div class="reward">⭐ 0 coins</div>
+      <button id="continueButton">Let's go! 🚀</button>
+    </section>
+
   </main>
 
   <footer>Made with 💗 for little smiles</footer>
@@ -38,4 +155,5 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
