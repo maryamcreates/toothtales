@@ -104,10 +104,14 @@ document.getElementById("finishButton").addEventListener("click", () => {
   showScreen(finishScreen);
 });
 
-// Continue button
-document.getElementById("continueButton").addEventListener("click", () => {
-  alert("Your magical ToothTales world is coming soon! 🦷✨");
+
+continueButton.addEventListener("click", () => {
+  document.getElementById("finishScreen").classList.add("hidden");
+  document.getElementById("worldScreen").classList.remove("hidden");
+
+  document.getElementById("worldName").textContent = child.name;
 });
+
 
 // Restore saved profile
 function restoreProfile() {
