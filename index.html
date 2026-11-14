@@ -154,6 +154,57 @@
 
   <script src="script.js"></script>
 
+<!-- SNACK TIME -->
+<section id="mealScreen" class="hidden">
+  <h1>🍎 Snack Time!</h1>
+  <div class="fairy">🧚‍♀️</div>
+  <h2>Let's have a little snack!</h2>
+  <p>Choose something delicious to eat.</p>
+
+  <div class="snack-options">
+    <button onclick="chooseSnack('🍎 Apple')">🍎 Apple</button>
+    <button onclick="chooseSnack('🍪 Cookie')">🍪 Cookie</button>
+    <button onclick="chooseSnack('🍞 Bread')">🍞 Bread</button>
+    <button onclick="chooseSnack('🧀 Cheese')">🧀 Cheese</button>
+  </div>
+
+  <p id="snackMessage">Choose your snack! 💗</p>
+
+  <button onclick="finishSnack()">I'm ready!</button>
+</section>
+
+<!-- BRUSH & RESCUE -->
+<section id="rescueScreen" class="hidden">
+  <h1>🦷 Brush & Rescue!</h1>
+  <div class="fairy">🧚‍♀️</div>
+  <h2>Oh! Little pieces are stuck!</h2>
+  <p>Let's rescue them from between the teeth!</p>
+
+  <div id="rescueMouth" class="rescue-mouth">
+    <div class="rescue-teeth">
+      <span>🦷</span>
+      <span>🦷</span>
+      <span>🦷</span>
+      <span>🦷</span>
+      <span>🦷</span>
+    </div>
+    <div id="foodCrumbs" class="food-crumbs">
+      <span class="crumb">🍎</span>
+      <span class="crumb">🍪</span>
+      <span class="crumb">🍞</span>
+    </div>
+  </div>
+
+  <div class="rescue-basket">
+    🧺 Rescued food: <span id="rescuedCount">0</span>/3
+  </div>
+
+  <p id="rescueMessage">Move your toothbrush and rescue the food!</p>
+  <button id="rescueDone" onclick="finishRescue()" disabled>
+    Continue ✨
+  </button>
+</section>
+
 <!-- TOOTHTALES WORLD -->
 <section id="worldScreen" class="hidden">
   <div class="world-header">
