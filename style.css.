@@ -1,0 +1,82 @@
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Trebuchet MS", sans-serif;
+  background: linear-gradient(135deg, #fff0f5, #eeeaff, #e4f8f2);
+  color: #665675;
+  text-align: center;
+}
+
+header {
+  padding: 25px 15px;
+}
+
+header h2 {
+  color: #a78bd4;
+  font-size: 28px;
+  margin-bottom: 5px;
+}
+
+header p {
+  color: #a18da9;
+}
+
+main {
+  max-width: 650px;
+  margin: 40px auto;
+  padding: 35px 20px;
+  background: rgba(255,255,255,0.75);
+  border-radius: 35px;
+  box-shadow: 0 12px 35px #b9a5ca30;
+}
+
+.tooth {
+  font-size: 110px;
+  animation: bounce 2s infinite;
+}
+
+h1 {
+  color: #aa8bd0;
+  font-size: 32px;
+}
+
+main p {
+  line-height: 1.7;
+  font-size: 17px;
+}
+
+button {
+  background: #c4a5e8;
+  color: white;
+  border: none;
+  padding: 18px 30px;
+  border-radius: 25px;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 6px 15px #b9a5ca50;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+#message {
+  color: #8d79a5;
+  margin-top: 25px;
+}
+
+footer {
+  padding: 25px;
+  color: #a18da9;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
