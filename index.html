@@ -103,13 +103,13 @@
       </form>
     </section>
 
-    <!-- 3. MAIN WORLD HUB (Главная страница с феей и меню) -->
+    <!-- 3. MAIN WORLD HUB (Главная страница с меню) -->
     <section id="worldScreen" class="screen hidden">
       <div class="world-welcome-card">
         <div class="fairy-avatar-container">
           <div class="fairy-anim">🧚‍♀️✨</div>
           <div class="fairy-speech-bubble" id="fairyMainSpeech">
-            Hello, <span id="worldChildName">friend</span>! I'm your Tooth Fairy. Let's start with our Brushing Education! 💖
+            Hello, <span id="worldChildName">friend</span>! Choose an activity to start your magical adventure! 💖
           </div>
         </div>
       </div>
@@ -118,7 +118,7 @@
         <button class="hub-card primary-card" onclick="startEducationFlow()">
           <span class="hub-icon">🎓</span>
           <h3>Brushing Education</h3>
-          <p>14 Interactive Steps & Jaw Learning</p>
+          <p>14 Interactive Steps with Human Jaw & Brush</p>
         </button>
 
         <button class="hub-card" onclick="openScreen('streakScreen')">
@@ -130,7 +130,7 @@
         <button class="hub-card" onclick="openScreen('jawExploreScreen')">
           <span class="hub-icon">🦷</span>
           <h3>Explore Human Jaw</h3>
-          <p>Learn incisors, molars & play puzzles</p>
+          <p>Learn incisors, molars & play tooth puzzle</p>
         </button>
 
         <button class="hub-card" onclick="openScreen('houseScreen')">
@@ -141,7 +141,7 @@
       </div>
     </section>
 
-    <!-- 4. EDUCATION & JAW BRUSHING (14 уровней обучения с челюстью) -->
+    <!-- 4. EDUCATION & JAW BRUSHING (14 уровней с живым управлением щеткой) -->
     <section id="educationScreen" class="screen hidden">
       <div class="edu-top-bar">
         <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
@@ -150,23 +150,23 @@
       </div>
 
       <div class="edu-layout">
-        <!-- Левая колонка: шаги (структура уровней) -->
+        <!-- Левая колонка: шаги обучения -->
         <div class="edu-sidebar">
           <h3>🌟 14 Brushing Steps</h3>
           <div id="eduStepsList" class="edu-steps-list"></div>
         </div>
 
-        <!-- Правая колонка: интерактив на анатомической челюсти -->
+        <!-- Правая колонка: интерактивная зона с пальцевым управлением щеткой -->
         <div class="edu-main-content">
           <h2 id="eduStepTitle">Step 1</h2>
           <p id="eduStepDesc">Instruction description goes here.</p>
 
           <div id="eduInteractiveContainer" class="edu-interactive-box">
-            <!-- Динамический инпут: выдавить пасту, почистить резцы и т.д. -->
+            <!-- Динамические инструменты: паста, вода, стаканчик -->
           </div>
 
-          <!-- Наша детальная человеческая челюсть с резцами и молярами -->
-          <div class="human-jaw-board">
+          <!-- Наша человеческая челюсть, где ребенок сам водит щетку пальцем -->
+          <div class="human-jaw-board" id="interactiveMouthBoard">
             <div class="jaw-row upper-jaw">
               <span class="jaw-tooth molar">Molar</span>
               <span class="jaw-tooth premolar">Premolar</span>
@@ -187,7 +187,9 @@
               <span class="jaw-tooth premolar">Premolar</span>
               <span class="jaw-tooth molar">Molar</span>
             </div>
-            <div id="brushCursor" class="interactive-brush">🪥</div>
+            
+            <!-- Живая зубная щетка, которую ребенок двигает пальцем -->
+            <div id="draggableToothbrush" class="draggable-toothbrush">🪥</div>
           </div>
 
           <button class="magical-btn" id="completeStepBtn" onclick="completeEducationStep()">Complete Step & Get +10 Coins ✨</button>
@@ -195,7 +197,7 @@
       </div>
     </section>
 
-    <!-- 5. STREAKS SCREEN (Ежедневный огонёк, таймер утренней и вечерней чистки) -->
+    <!-- 5. STREAKS SCREEN (Ежедневный огонёк и таймеры) -->
     <section id="streakScreen" class="screen hidden">
       <div class="edu-top-bar">
         <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
@@ -211,7 +213,6 @@
         </div>
 
         <div class="timers-grid">
-          <!-- Morning Timer -->
           <div class="timer-box">
             <h3>☀️ Morning Brushing</h3>
             <p id="morningStatus">Status: Not done today</p>
@@ -219,7 +220,6 @@
             <button class="magical-btn" id="startMorningTimerBtn" onclick="startBrushingTimer('morning')">Start 2-Min Timer ⏱️</button>
           </div>
 
-          <!-- Night Timer -->
           <div class="timer-box">
             <h3>🌙 Night Brushing</h3>
             <p id="nightStatus">Status: Not done today</p>
@@ -230,7 +230,7 @@
       </div>
     </section>
 
-    <!-- 6. EXPLORE JAW & PUZZLES SCREEN -->
+    <!-- 6. EXPLORE JAW & PUZZLES SCREEN (Отдельная вкладка для изучения зубов) -->
     <section id="jawExploreScreen" class="screen hidden">
       <div class="edu-top-bar">
         <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
@@ -238,11 +238,12 @@
         <span></span>
       </div>
       <div class="explore-content-box">
-        <h3>Know your teeth!</h3>
-        <p>Incisors cut food, Canines tear food, and Molars crush and grind food!</p>
+        <h3>Know your teeth structure!</h3>
+        <p>Human teeth have special jobs: <b>Incisors</b> in the front cut food, <b>Canines</b> tear food, and <b>Molars</b> in the back crush and grind food.</p>
+        
         <div class="puzzle-mini-card">
           <h4>🧩 Tooth Puzzle Challenge</h4>
-          <p id="puzzleQuestion">Match the tooth name: Which teeth are in the very front used for biting?</p>
+          <p id="puzzleQuestion">Which teeth are located in the very front of your mouth and used for biting?</p>
           <div class="puzzle-options" id="puzzleOptions">
             <button onclick="answerPuzzle(true)">Incisors ✨</button>
             <button onclick="answerPuzzle(false)">Molars</button>
@@ -252,7 +253,7 @@
       </div>
     </section>
 
-    <!-- 7. HOUSE & SHOP SCREEN (Мой дом и магазин мебели) -->
+    <!-- 7. HOUSE & SHOP SCREEN -->
     <section id="houseScreen" class="screen hidden">
       <div class="edu-top-bar">
         <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
