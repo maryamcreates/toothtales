@@ -55,7 +55,6 @@
           </select>
         </div>
 
-        <!-- CHARACTER CREATOR PREVIEW -->
         <h3>Design your character! ✨</h3>
         <div class="avatar" id="avatar">
           <div class="avatar-hair"></div>
@@ -103,13 +102,13 @@
       </form>
     </section>
 
-    <!-- 3. MAIN WORLD HUB (Главная страница с меню) -->
+    <!-- 3. MAIN WORLD HUB -->
     <section id="worldScreen" class="screen hidden">
       <div class="world-welcome-card">
         <div class="fairy-avatar-container">
           <div class="fairy-anim">🧚‍♀️✨</div>
           <div class="fairy-speech-bubble" id="fairyMainSpeech">
-            Hello, <span id="worldChildName">friend</span>! Choose an activity to start your magical adventure! 💖
+            Hello, <span id="worldChildName">friend</span>! Let's take care of your teeth and decorate your cozy home! 💖
           </div>
         </div>
       </div>
@@ -117,55 +116,51 @@
       <div class="world-menu-grid">
         <button class="hub-card primary-card" onclick="startEducationFlow()">
           <span class="hub-icon">🎓</span>
-          <h3>Brushing Education</h3>
-          <p>14 Interactive Steps with Human Jaw & Brush</p>
+          <h3>Brushing & Cleaning</h3>
+          <p>Interactive brushing with real paste & water</p>
         </button>
 
         <button class="hub-card" onclick="openScreen('streakScreen')">
           <span class="hub-icon">🔥</span>
-          <h3>Daily Streaks (Streak)</h3>
+          <h3>Daily Streaks</h3>
           <p>Morning & Night 2-min Timers</p>
         </button>
 
         <button class="hub-card" onclick="openScreen('jawExploreScreen')">
           <span class="hub-icon">🦷</span>
           <h3>Explore Human Jaw</h3>
-          <p>Learn incisors, molars & play tooth puzzle</p>
+          <p>Learn tooth names & play puzzle</p>
         </button>
 
         <button class="hub-card" onclick="openScreen('houseScreen')">
           <span class="hub-icon">🏡</span>
-          <h3>My House & Shop</h3>
-          <p>Decorate rooms & buy accessories</p>
+          <h3>My World & House</h3>
+          <p>Buy furniture, wallpapers, carpets & garden</p>
         </button>
       </div>
     </section>
 
-    <!-- 4. EDUCATION & JAW BRUSHING (14 уровней с живым управлением щеткой) -->
+    <!-- 4. EDUCATION & JAW BRUSHING (С пастой, водой и свободной щеткой) -->
     <section id="educationScreen" class="screen hidden">
       <div class="edu-top-bar">
         <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
-        <span id="eduLevelIndicator" class="level-indicator">Step 1 of 14</span>
+        <span id="eduLevelIndicator" class="level-indicator">Step 1 of 5</span>
         <span class="coins-earned">🪙 <span id="eduCoinsCount">0</span></span>
       </div>
 
-      <div class="edu-layout">
-        <!-- Левая колонка: шаги обучения -->
-        <div class="edu-sidebar">
-          <h3>🌟 14 Brushing Steps</h3>
-          <div id="eduStepsList" class="edu-steps-list"></div>
-        </div>
+      <div class="edu-main-content wide-panel">
+        <h2 id="eduStepTitle">Step 1: Apply Toothpaste</h2>
+        <p id="eduStepDesc">Drag the toothpaste onto your toothbrush to apply paste!</p>
 
-        <!-- Правая колонка: интерактивная зона с пальцевым управлением щеткой -->
-        <div class="edu-main-content">
-          <h2 id="eduStepTitle">Step 1</h2>
-          <p id="eduStepDesc">Instruction description goes here.</p>
-
-          <div id="eduInteractiveContainer" class="edu-interactive-box">
-            <!-- Динамические инструменты: паста, вода, стаканчик -->
+        <!-- Интерактивный стол с пастой, водой и челюстью -->
+        <div class="brushing-table" id="brushingTable">
+          <!-- Инструменты -->
+          <div class="tools-tray">
+            <div id="toothpasteTube" class="tool-item"><span class="tool-icon">🧪</span><br>Toothpaste</div>
+            <div id="waterCup" class="tool-item"><span class="tool-icon">🥤</span><br>Water Cup</div>
           </div>
 
-          <!-- Наша человеческая челюсть, где ребенок сам водит щетку пальцем -->
+          <!-- Наша человеческая челюсть для чистки пальцем -->
           <div class="human-jaw-board" id="interactiveMouthBoard">
             <div class="jaw-row upper-jaw">
               <span class="jaw-tooth molar">Molar</span>
@@ -187,17 +182,17 @@
               <span class="jaw-tooth premolar">Premolar</span>
               <span class="jaw-tooth molar">Molar</span>
             </div>
-            
-            <!-- Живая зубная щетка, которую ребенок двигает пальцем -->
-            <div id="draggableToothbrush" class="draggable-toothbrush">🪥</div>
           </div>
 
-          <button class="magical-btn" id="completeStepBtn" onclick="completeEducationStep()">Complete Step & Get +10 Coins ✨</button>
+          <!-- Зубная щетка, которую ребёнок водит по экрану -->
+          <div id="draggableToothbrush" class="draggable-toothbrush">🪥</div>
         </div>
+
+        <button class="magical-btn" id="nextBrushStepBtn" onclick="nextBrushStep()">Next Step ✨</button>
       </div>
     </section>
 
-    <!-- 5. STREAKS SCREEN (Ежедневный огонёк и таймеры) -->
+    <!-- 5. STREAKS SCREEN -->
     <section id="streakScreen" class="screen hidden">
       <div class="edu-top-bar">
         <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
@@ -209,7 +204,7 @@
         <div class="streak-counter-box">
           <span class="fire-big">🔥</span>
           <h2>Current Streak: <span id="streakDaysNum">0</span> Days</h2>
-          <p>Brush every morning and night to keep your streak burning!</p>
+          <p>Brush every morning and night! Big milestones (10, 20, 30 days) give huge coin rewards!</p>
         </div>
 
         <div class="timers-grid">
@@ -230,59 +225,67 @@
       </div>
     </section>
 
-    <!-- 6. EXPLORE JAW & PUZZLES SCREEN (Отдельная вкладка для изучения зубов) -->
+    <!-- 6. EXPLORE JAW & PUZZLES (Изучение челюсти и пазл) -->
     <section id="jawExploreScreen" class="screen hidden">
       <div class="edu-top-bar">
         <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
-        <h2>🦷 Human Jaw Anatomy & Puzzles</h2>
+        <h2>🦷 Human Jaw & Tooth Anatomy</h2>
         <span></span>
       </div>
       <div class="explore-content-box">
-        <h3>Know your teeth structure!</h3>
-        <p>Human teeth have special jobs: <b>Incisors</b> in the front cut food, <b>Canines</b> tear food, and <b>Molars</b> in the back crush and grind food.</p>
+        <h3>Anatomy of Human Mouth</h3>
+        <p>Look at your teeth! <b>Incisors</b> are in the front for cutting food. <b>Canines</b> are pointed for tearing. <b>Premolars and Molars</b> in the back are flat for crushing and grinding food.</p>
         
-        <div class="puzzle-mini-card">
-          <h4>🧩 Tooth Puzzle Challenge</h4>
-          <p id="puzzleQuestion">Which teeth are located in the very front of your mouth and used for biting?</p>
-          <div class="puzzle-options" id="puzzleOptions">
-            <button onclick="answerPuzzle(true)">Incisors ✨</button>
-            <button onclick="answerPuzzle(false)">Molars</button>
+        <!-- Крупная наглядная челюсть с названиями -->
+        <div class="large-anatomy-jaw">
+          <div class="anatomy-row">
+            <span class="tooth-label-card">Molar (Grinding)</span>
+            <span class="tooth-label-card">Premolar</span>
+            <span class="tooth-label-card">Incisor (Bbiting)</span>
+            <span class="tooth-label-card">Incisor</span>
+            <span class="tooth-label-card">Incisor</span>
+            <span class="tooth-label-card">Incisor</span>
+            <span class="tooth-label-card">Premolar</span>
+            <span class="tooth-label-card">Molar (Grinding)</span>
           </div>
+        </div>
+
+        <button class="magical-btn" onclick="startToothPuzzle()">I memorized it! Start Puzzle Game 🧩</button>
+
+        <div class="puzzle-mini-card hidden" id="puzzleContainer">
+          <h4>🧩 Tooth Puzzle Challenge</h4>
+          <p id="puzzleInstruction">Match the correct teeth to their places!</p>
+          <div id="puzzleSlots" class="puzzle-slots"></div>
+          <div id="puzzlePieces" class="puzzle-pieces"></div>
           <p id="puzzleResult" style="font-weight: bold; margin-top: 10px;"></p>
         </div>
       </div>
     </section>
 
-    <!-- 7. HOUSE & SHOP SCREEN -->
+    <!-- 7. HOUSE & SHOP (Мой мир, обои, ковры, мебель, техника, сад) -->
     <section id="houseScreen" class="screen hidden">
       <div class="edu-top-bar">
         <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
-        <h2>🏡 My House & Shop</h2>
+        <h2>🏡 My World & Shop</h2>
         <span>🪙 Coins: <span id="shopCoins">0</span></span>
       </div>
 
       <div class="house-container">
-        <div class="house-room" id="myRoom">
-          <h3>Your Cozy Room</h3>
-          <div id="placedDecorations" class="placed-decorations">🛏️ (Empty room - buy items below!)</div>
+        <!-- Комната игрока (меняет обои и ковры) -->
+        <div class="house-room" id="myRoom" style="background-color: #fdfcff;">
+          <h3>Your Cozy Room & Garden</h3>
+          <div class="room-preview-items" id="roomPreviewItems">🛏️ (Empty room. Buy furniture below!)</div>
         </div>
 
-        <div class="shop-panel">
-          <h3>🛍️ Furniture & Wallpaper Shop</h3>
-          <div class="shop-items-grid">
-            <div class="shop-item">
-              <span>🧸 Cute Teddy Bear (50 coins)</span>
-              <button onclick="buyItem('Teddy Bear', 50)">Buy</button>
-            </div>
-            <div class="shop-item">
-              <span>🪴 House Plant (30 coins)</span>
-              <button onclick="buyItem('House Plant', 30)">Buy</button>
-            </div>
-            <div class="shop-item">
-              <span>🖼️ Starry Wallpaper (100 coins)</span>
-              <button onclick="buyItem('Starry Wallpaper', 100)">Buy</button>
-            </div>
-          </div>
+        <!-- Магазин по категориям -->
+        <div class="shop-tabs">
+          <button class="tab-btn active" onclick="switchShopTab('walls')">Walls & Carpets</button>
+          <button class="tab-btn" onclick="switchShopTab('furniture')">Furniture & Tech</button>
+          <button class="tab-btn" onclick="switchShopTab('garden')">Garden & House</button>
+        </div>
+
+        <div class="shop-content-panel" id="shopPanelContent">
+          <!-- Заполняется динамически -->
         </div>
       </div>
     </section>
