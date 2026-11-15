@@ -21,22 +21,22 @@ let child = {
   streak: 1
 };
 
-// 14 шагов инструкции по гигиене
+// 14 пунктов урока гигиены с реальными задачами на нашей челюсти
 const academySteps = [
-  { title: "Step 1: Pick up toothbrush 🪥", desc: "Tap the toothbrush to pick it up and get ready!", actionType: "normal" },
-  { title: "Step 2: Put toothpaste ✨", desc: "Tap the magical toothpaste tube to squeeze it onto your brush!", actionType: "toothpaste" },
-  { title: "Step 3: Top teeth — outside 🦷", desc: "Move your brush left and right on the upper outer teeth.", actionType: "normal" },
-  { title: "Step 4: Top teeth — inside 🌟", desc: "Carefully brush the inner side of your upper teeth.", actionType: "normal" },
-  { title: "Step 5: Top teeth — chewing surface 🍪", desc: "Scrub back and forth right on top of the upper chewing teeth.", actionType: "normal" },
-  { title: "Step 6: Bottom teeth — outside 😁", desc: "Move your brush left and right on your lower outer teeth.", actionType: "normal" },
-  { title: "Step 7: Bottom teeth — inside ✨", desc: "Gently brush the inner side of your lower teeth.", actionType: "normal" },
-  { title: "Step 8: Bottom teeth — chewing surface 🥞", desc: "Scrub back and forth on top of the lower chewing teeth.", actionType: "normal" },
-  { title: "Step 9: Brush your tongue 👅", desc: "Move the brush gently across your tongue for fresh breath.", actionType: "normal" },
-  { title: "Step 10: Spit out toothpaste 💧", desc: "Tap the sink to spit out the foam cleanly.", actionType: "normal" },
-  { title: "Step 11: Rinse your mouth 🥤", desc: "Take a refreshing sip of water and rinse.", actionType: "normal" },
-  { title: "Step 12: Wash your brush 🚿", desc: "Clean your toothbrush under sparkling running water.", actionType: "normal" },
-  { title: "Step 13: Put the brush away 🏠", desc: "Place the brush safely back into its holder.", actionType: "normal" },
-  { title: "Step 14: Smile! 😁💖", desc: "Flash a brilliant, glowing clean smile!", actionType: "normal" }
+  { title: "Step 1: Pick up toothbrush 🪥", desc: "Tap to pick up your toothbrush and get ready!", actionType: "normal", indicatorPos: "top: 15px; left: 15px;" },
+  { title: "Step 2: Put toothpaste on brush ✨", desc: "Tap the toothpaste tube to squeeze it onto the brush!", actionType: "toothpaste", indicatorPos: "top: 20px; left: 45%;" },
+  { title: "Step 3: Top teeth — outside 🦷", desc: "Move the brush left and right on the upper outer teeth.", actionType: "normal", indicatorPos: "top: 30px; left: 30%;" },
+  { title: "Step 4: Top teeth — inside 🌟", desc: "Brush the inner side of the upper teeth carefully.", actionType: "normal", indicatorPos: "top: 35px; left: 55%;" },
+  { title: "Step 5: Top teeth — chewing surface 🍪", desc: "Scrub back and forth right on top of the upper chewing teeth.", actionType: "normal", indicatorPos: "top: 25px; left: 65%;" },
+  { title: "Step 6: Bottom teeth — outside 😁", desc: "Move the brush left and right on your lower outer teeth.", actionType: "normal", indicatorPos: "bottom: 30px; left: 30%;" },
+  { title: "Step 7: Bottom teeth — inside ✨", desc: "Gently brush the inner side of your lower teeth.", actionType: "normal", indicatorPos: "bottom: 35px; left: 50%;" },
+  { title: "Step 8: Bottom teeth — chewing surface 🥞", desc: "Scrub back and forth on top of the lower chewing teeth.", actionType: "normal", indicatorPos: "bottom: 25px; left: 60%;" },
+  { title: "Step 9: Brush your tongue 👅", desc: "Move the brush gently across your tongue for fresh breath.", actionType: "normal", indicatorPos: "top: 45%; left: 45%;" },
+  { title: "Step 10: Spit out toothpaste 💧", desc: "Tap to spit out the foam cleanly in the sink.", actionType: "normal", indicatorPos: "top: 75%; left: 80%;" },
+  { title: "Step 11: Rinse your mouth 🥤", desc: "Take a sip of water and rinse your mouth thoroughly.", actionType: "normal", indicatorPos: "top: 45%; left: 20%;" },
+  { title: "Step 12: Wash your brush 🚿", desc: "Clean your toothbrush under sparkling running water.", actionType: "normal", indicatorPos: "top: 15px; right: 15px;" },
+  { title: "Step 13: Put the brush away 🏠", desc: "Place your clean brush safely back into its holder.", actionType: "normal", indicatorPos: "top: 10px; left: 10px;" },
+  { title: "Step 14: Smile! 😁💖", desc: "Flash a brilliant, glowing clean smile with your healthy teeth!", actionType: "normal", indicatorPos: "top: 45%; left: 45%;" }
 ];
 
 let currentAcademyStep = 0;
@@ -72,10 +72,10 @@ function updateDrawerList() {
 // Функция феи-помощницы
 function showFairyHint() {
   const hints = [
-    "You're doing amazing, little star! ✨ Keep going!",
-    "Remember to brush every little corner! 🦷💗",
-    "Check the Guide tab on the left if you need help with steps! 📖",
-    "Each completed step brings you closer to magical rewards! 🌟"
+    "You're doing amazing, little hero! ✨ Check your Guide if you need assistance!",
+    "Remember: brushing protects our incisors and molars from germs! 🦷💗",
+    "Every completed step gives you +10 coins for your adventure! 🌟",
+    "Look at our healthy human jaw — keeping it clean is so important! ✨"
   ];
   const randomHint = hints[Math.floor(Math.random() * hints.length)];
   document.getElementById("fairyHintText").textContent = randomHint;
@@ -192,7 +192,7 @@ function finishSnack() {
   showScreen(rescueScreen);
   ttRescuedCount = 0;
 
-  // Строго та еда, которую выбрал ребенок! Никакой другой еды.
+  // Строго выбранная еда на зубах
   const crumbs = document.querySelectorAll(".dynamic-crumb");
   crumbs.forEach(crumb => {
     crumb.textContent = ttSnackEmoji;
@@ -201,7 +201,7 @@ function finishSnack() {
 
   document.getElementById("rescuedCount").textContent = "0";
   document.getElementById("rescueSubtitle").textContent = `Oh! Some ${ttSelectedSnack} got stuck between teeth!`;
-  document.getElementById("rescueCry").textContent = `«Rescue us please, or we'll make the tooth decay! 😭»`;
+  document.getElementById("rescueCry").textContent = `«AAAHH! HELP! Rescue us, or we'll decay the tooth! 😭»`;
   document.getElementById("rescueMessage").textContent = "Move your toothbrush to save them!";
   document.getElementById("rescueDone").disabled = true;
 }
@@ -267,7 +267,7 @@ ttMouth.addEventListener("pointerup", ttStopBrush);
 ttMouth.addEventListener("pointercancel", ttStopBrush);
 
 
-// TOOTH ACADEMY (14 STEPS WITH COINS PER STEP & TOOTHPASTE SQUEEZE)
+// TOOTH ACADEMY (14 пунктов с монетами по 10 за выполнение)
 function startAcademy() {
   currentAcademyStep = 0;
   stepCompleted.fill(false);
@@ -280,18 +280,19 @@ function updateAcademyUI() {
   document.getElementById("academyTitle").textContent = step.title;
   document.getElementById("academyDesc").textContent = step.desc;
   document.getElementById("currentStepNum").textContent = currentAcademyStep + 1;
+  document.getElementById("academyBrushIndicator").style.cssText = step.indicatorPos;
 
   const interactiveArea = document.getElementById("academyInteractiveArea");
   interactiveArea.innerHTML = "";
 
   const actionBtn = document.getElementById("academyActionBtn");
 
-  // Шаг 2: Выдавливание пасты на щетку
+  // Шаг 2: Выдавливание пасты
   if (step.actionType === "toothpaste") {
     actionBtn.style.display = "none";
     const tubeBtn = document.createElement("button");
     tubeBtn.className = "paste-tube-btn";
-    tubeBtn.textContent = "squeeze toothpaste 🪥✨";
+    tubeBtn.textContent = "Squeeze toothpaste 🪥✨";
     tubeBtn.onclick = () => {
       tubeBtn.textContent = "Paste added! 💙✨";
       tubeBtn.style.background = "#82cdb5";
@@ -302,7 +303,7 @@ function updateAcademyUI() {
     interactiveArea.appendChild(tubeBtn);
   } else {
     actionBtn.style.display = "inline-block";
-    actionBtn.textContent = currentAcademyStep === 13 ? "Finish & Smile! (+50 ⭐)" : `Complete step (+10 ⭐)`;
+    actionBtn.textContent = currentAcademyStep === 13 ? "Finish & Smile! (+50 ⭐)" : "Complete step (+10 ⭐)";
   }
   updateDrawerList();
 }
