@@ -1,4 +1,3 @@
-
 * {
   box-sizing: border-box;
 }
@@ -75,6 +74,7 @@ button {
   cursor: pointer;
   box-shadow: 0 5px 13px #b9a5ca40;
   margin: 8px;
+  transition: transform 0.1s;
 }
 
 button:active {
@@ -284,22 +284,7 @@ footer {
   50% { transform: translateY(-12px); }
 }
 
-@media (max-width: 500px) {
-  main {
-    margin: 10px;
-    padding: 25px 14px;
-  }
-
-  h1 {
-    font-size: 25px;
-  }
-
-  button {
-    max-width: 100%;
-  }
-}
-
-/* TOOTHTALES WORLD */
+/* WORLD SCREEN */
 
 #worldScreen {
   max-width: 700px;
@@ -334,17 +319,6 @@ footer {
   margin-bottom: 25px;
 }
 
-.fairy {
-  font-size: 65px;
-  animation: fairyFloat 2s infinite ease-in-out;
-}
-
-@keyframes fairyFloat {
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
 .brushing-cards {
   display: flex;
   gap: 15px;
@@ -377,10 +351,11 @@ footer {
   margin-top: 22px;
 }
 
-/* SNACK TIME */
+/* SNACK & RESCUE */
 
 #mealScreen,
-#rescueScreen {
+#rescueScreen,
+#academyScreen {
   max-width: 700px;
   margin: 25px auto;
   padding: 25px;
@@ -406,9 +381,21 @@ footer {
   font-size: 18px;
 }
 
-#mealScreen button,
-#rescueScreen button {
-  cursor: pointer;
+.speech-bubble {
+  background: #fff;
+  border: 2px dashed #f2a6c2;
+  border-radius: 15px;
+  padding: 10px 15px;
+  font-style: italic;
+  color: #d1618a;
+  display: inline-block;
+  margin: 10px 0;
+  animation: pulseBubble 1.5s infinite;
+}
+
+@keyframes pulseBubble {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
 }
 
 .rescue-mouth {
@@ -417,12 +404,10 @@ footer {
   padding: 30px 12px;
   margin: 25px 0;
   border: 5px solid white;
-
   position: relative;
   min-height: 220px;
   touch-action: none;
 }
-
 
 .rescue-teeth {
   display: flex;
@@ -435,26 +420,11 @@ footer {
 .game-tooth {
   width: 48px;
   height: 68px;
-  flex-shrink: 1;
   background: linear-gradient(145deg, #ffffff, #fff9e9);
   border-radius: 45% 45% 38% 38%;
   box-shadow: 0 5px 0 #e7cbd6;
   position: relative;
 }
-
-.game-tooth::after {
-  content: "";
-  position: absolute;
-  top: 12px;
-  left: 10px;
-  width: 9px;
-  height: 18px;
-  background: #ffffff;
-  border-radius: 50%;
-  opacity: 0.8;
-}
-
-
 
 .food-crumbs {
   position: absolute;
@@ -475,32 +445,16 @@ footer {
   box-shadow: 0 3px 8px #d9b7c9;
   pointer-events: none;
   transition: opacity 0.3s, transform 0.3s;
-}
-
-.apple-crumb {
-  left: 20%;
-  top: 112px;
-}
-
-.cookie-crumb {
-  left: 47%;
-  top: 112px;
-}
-
-.bread-crumb {
-  left: 74%;
-  top: 112px;
-}
-
-
-.crumb {
   touch-action: none;
   user-select: none;
 }
 
+.crumb:nth-child(1) { left: 22%; top: 112px; }
+.crumb:nth-child(2) { left: 47%; top: 112px; }
+.crumb:nth-child(3) { left: 72%; top: 112px; }
+
 .crumb.rescued {
   opacity: 0.25;
-  pointer-events: none;
   transform: scale(0.5);
 }
 
@@ -517,7 +471,26 @@ footer {
   cursor: not-allowed;
 }
 
-/* INTERACTIVE TOOTHBRUSH */
+/* TOOTH ACADEMY */
+
+.academy-box {
+  background: white;
+  border-radius: 22px;
+  padding: 25px;
+  margin: 20px auto;
+  box-shadow: 0 5px 15px #e8d9ef;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.academy-action-area {
+  margin-top: 20px;
+}
+
+/* TOOTHBRUSH */
 
 .toothbrush {
   font-size: 55px;
@@ -526,12 +499,10 @@ footer {
   background: white;
   border-radius: 50%;
   box-shadow: 0 4px 12px #d9c6e8;
-
   position: absolute;
   left: 10px;
   top: 10px;
   z-index: 5;
-
   pointer-events: none;
   user-select: none;
 }
@@ -541,6 +512,3 @@ footer {
   transform: scale(1.15);
 }
 
-.crumb.rescued {
-  transition: all 0.3s ease;
-}
