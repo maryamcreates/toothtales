@@ -1,241 +1,327 @@
 
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToothTales — My Little Dental World</title>
+  <meta name="theme-color" content="#fff5f7">
+  <title>ToothTales — My Happy Smile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+  <div class="app-shell">
 
-<header class="topbar">
-  <a class="logo" href="#" onclick="showScreen('home')">🦷 ToothTales</a>
-  <div class="wallet">🪙 <span id="coinCount">100</span></div>
-</header>
+    <header class="topbar">
+      <button class="brand" onclick="showScreen('home')">
+        <span class="brand-icon">🦷</span>
+        <span>ToothTales</span>
+      </button>
+      <div class="topbar-coins">🪙 <span id="coinCount">100</span></div>
+    </header>
 
-<main>
+    <main>
 
-<!-- HOME -->
-<section id="home" class="screen">
-  <div class="hero">
-    <div class="hero-text">
-      <p class="eyebrow">MY LITTLE HEALTHY WORLD</p>
-      <h1>Welcome to<br>ToothTales!</h1>
-      <p>Учись заботиться о зубках, играй и создавай собственный мир!</p>
-      <input id="childName" placeholder="Как тебя зовут?">
-      <input id="childAge" type="number" placeholder="Сколько тебе лет?">
-      <label for="avatarColor">Цвет персонажа</label>
-      <select id="avatarColor">
-        <option value="#f5b6c8">Розовый</option>
-        <option value="#b9d9f5">Голубой</option>
-        <option value="#c8e8c5">Мятный</option>
-        <option value="#f6df9f">Жёлтый</option>
-      </select>
-      <button onclick="saveProfile()">Начать приключение ✨</button>
-    </div>
-    <div class="hero-avatar" id="avatarFace">🧚🏻‍♀️</div>
+      <!-- HOME -->
+      <section id="home" class="screen">
+        <div class="hero">
+          <div class="hero-text">
+            <p class="eyebrow">A LITTLE WORLD OF HEALTHY SMILES</p>
+            <h1>Welcome to<br><span>ToothTales!</span></h1>
+            <p>Learn, play, brush and create your own little world.</p>
+          </div>
+          <div class="hero-character">🦷</div>
+        </div>
+
+        <div class="profile-card">
+          <h2>Let's meet you!</h2>
+          <label for="childName">Your name</label>
+          <input id="childName" type="text" maxlength="18" placeholder="Enter your name">
+
+          <label for="childAge">Your age</label>
+          <select id="childAge">
+            <option value="3">3 years old</option>
+            <option value="4">4 years old</option>
+            <option value="5">5 years old</option>
+            <option value="6">6 years old</option>
+            <option value="7">7 years old</option>
+            <option value="8">8 years old</option>
+          </select>
+
+          <label>Choose your avatar</label>
+          <div class="avatar-options">
+            <button class="avatar-choice selected" data-avatar="🧒">🧒</button>
+            <button class="avatar-choice" data-avatar="👧">👧</button>
+            <button class="avatar-choice" data-avatar="👦">👦</button>
+            <button class="avatar-choice" data-avatar="🐻">🐻</button>
+            <button class="avatar-choice" data-avatar="🐰">🐰</button>
+          </div>
+
+          <button class="primary-button" id="startAdventure">Start my adventure ✨</button>
+        </div>
+      </section>
+
+      <!-- WORLD -->
+      <section id="world" class="screen hidden">
+        <div class="welcome-heading">
+          <div>
+            <p class="eyebrow">YOUR LITTLE WORLD</p>
+            <h1>Hello, <span id="playerName">Friend</span>!</h1>
+            <p>What would you like to do today?</p>
+          </div>
+          <div class="welcome-avatar" id="welcomeAvatar">🧒</div>
+        </div>
+
+        <div class="feature-grid">
+          <button class="feature-card pink" onclick="showScreen('snack')">
+            <span class="feature-icon">🍓</span>
+            <strong>Snack Time</strong>
+            <small>Enjoy a tasty snack</small>
+          </button>
+
+          <button class="feature-card blue" onclick="showScreen('rescue')">
+            <span class="feature-icon">🪥</span>
+            <strong>Rescue the Teeth</strong>
+            <small>Save food from your teeth</small>
+          </button>
+
+          <button class="feature-card yellow" onclick="showScreen('anatomy')">
+            <span class="feature-icon">🔬</span>
+            <strong>Tooth Academy</strong>
+            <small>Discover your teeth</small>
+          </button>
+
+          <button class="feature-card purple" onclick="showScreen('room')">
+            <span class="feature-icon">🏡</span>
+            <strong>My Dream Home</strong>
+            <small>Decorate your rooms</small>
+          </button>
+
+          <button class="feature-card green" onclick="showScreen('streaks')">
+            <span class="feature-icon">⏰</span>
+            <strong>Brushing Routine</strong>
+            <small>Build healthy habits</small>
+          </button>
+        </div>
+      </section>
+
+      <!-- SNACK -->
+      <section id="snack" class="screen hidden">
+        <button class="back-button" onclick="showScreen('world')">← Back to my world</button>
+        <div class="section-heading">
+          <p class="eyebrow">YUMMY TIME</p>
+          <h1>Choose a snack!</h1>
+          <p>Pick something delicious and discover what happens next.</p>
+        </div>
+
+        <div class="snack-grid">
+          <button class="snack-choice" data-snack="🍎" data-name="Apple">🍎<span>Apple</span></button>
+          <button class="snack-choice" data-snack="🍓" data-name="Strawberries">🍓<span>Strawberries</span></button>
+          <button class="snack-choice" data-snack="🥕" data-name="Carrot">🥕<span>Carrot</span></button>
+          <button class="snack-choice" data-snack="🍪" data-name="Cookie">🍪<span>Cookie</span></button>
+          <button class="snack-choice" data-snack="🍬" data-name="Candy">🍬<span>Candy</span></button>
+          <button class="snack-choice" data-snack="🧀" data-name="Cheese">🧀<span>Cheese</span></button>
+        </div>
+
+        <div id="snackResult" class="message-card hidden">
+          <div id="eatingAvatar" class="snack-big">🍎</div>
+          <h2 id="eatingText">Yummy!</h2>
+          <p>Some food can get stuck between your teeth. Let's clean them!</p>
+          <button class="primary-button" onclick="showScreen('rescue')">Let's rescue the teeth! 🪥</button>
+        </div>
+      </section>
+
+      <!-- RESCUE GAME -->
+      <section id="rescue" class="screen hidden">
+        <button class="back-button" onclick="showScreen('world')">← Back to my world</button>
+
+        <div class="section-heading">
+          <p class="eyebrow">THE BIG CLEAN-UP</p>
+          <h1>Rescue the teeth!</h1>
+          <p>Move your toothbrush over every food piece to clean the teeth.</p>
+        </div>
+
+        <div class="game-panel">
+          <div class="game-status">
+            <span>Food rescued</span>
+            <strong><span id="rescuedCount">0</span> / 3</strong>
+          </div>
+
+          <div class="progress-track">
+            <div id="rescueBar" class="progress-fill"></div>
+          </div>
+
+          <div id="mouthGame" class="mouth-game">
+            <div class="mouth-label">DRAG THE TOOTHBRUSH!</div>
+            <div class="game-mouth">
+              <div class="game-teeth">
+                <span>🦷</span><span>🦷</span><span>🦷</span>
+                <span>🦷</span><span>🦷</span><span>🦷</span>
+              </div>
+              <div class="food-crumbs" id="foodCrumbs">
+                <span class="crumb" data-crumb="0">🍪</span>
+                <span class="crumb" data-crumb="1">🍓</span>
+                <span class="crumb" data-crumb="2">🥕</span>
+              </div>
+            </div>
+            <div id="movingBrush" class="moving-brush" role="button" aria-label="Toothbrush">🪥</div>
+          </div>
+
+          <p id="rescueMessage" class="game-message">Touch and drag the toothbrush to the food!</p>
+          <button id="rescueContinue" class="primary-button hidden" onclick="finishRescue()">Continue ✨</button>
+          <button id="restartRescue" class="secondary-button" onclick="startRescue()">Start a new round</button>
+        </div>
+      </section>
+
+      <!-- TOOTH ACADEMY -->
+      <section id="anatomy" class="screen hidden">
+        <button class="back-button" onclick="showScreen('world')">← Back to my world</button>
+        <div class="section-heading">
+          <p class="eyebrow">DISCOVER YOUR SMILE</p>
+          <h1>Tooth Academy</h1>
+          <p>Tap a tooth to learn more about it!</p>
+        </div>
+
+        <div class="academy-card">
+          <div class="jaw-model">
+            <button class="tooth-part" data-part="Incisors">🦷</button>
+            <button class="tooth-part" data-part="Canines">🦷</button>
+            <button class="tooth-part" data-part="Premolars">🦷</button>
+            <button class="tooth-part" data-part="Molars">🦷</button>
+          </div>
+          <div id="anatomyInfo" class="academy-info">
+            <h2>Your teeth are amazing!</h2>
+            <p>Tap one of the teeth above to discover its job.</p>
+          </div>
+        </div>
+
+        <div class="academy-card">
+          <h2>Meet your dental tools</h2>
+          <div class="tool-grid">
+            <button class="tool-choice" data-tool="Toothbrush">🪥<span>Toothbrush</span></button>
+            <button class="tool-choice" data-tool="Toothpaste">🧴<span>Toothpaste</span></button>
+            <button class="tool-choice" data-tool="Floss">🧵<span>Dental floss</span></button>
+            <button class="tool-choice" data-tool="Water">💧<span>Water</span></button>
+          </div>
+          <div id="toolInfo" class="academy-info">
+            <p>Tap a tool to learn how it helps your smile.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- DREAM HOME -->
+      <section id="room" class="screen hidden">
+        <button class="back-button" onclick="showScreen('world')">← Back to my world</button>
+
+        <div class="section-heading">
+          <p class="eyebrow">YOUR CREATIVE SPACE</p>
+          <h1>My Dream Home</h1>
+          <p>Buy furniture, decorate your rooms and create your dream home!</p>
+        </div>
+
+        <div class="room-controls">
+          <label for="roomSelect">My rooms</label>
+          <select id="roomSelect"></select>
+        </div>
+
+        <div id="roomStage" class="room-stage">
+          <div class="room-wall">
+            <div class="room-window">☀️</div>
+            <div class="room-items" id="roomItems"></div>
+          </div>
+          <div class="room-floor"></div>
+        </div>
+
+        <div class="room-editor">
+          <h2>Selected furniture</h2>
+          <p id="selectedItemInfo">Select an item in your room to edit it.</p>
+
+          <label for="itemSize">Furniture size</label>
+          <input id="itemSize" type="range" min="60" max="150" value="100">
+
+          <div class="editor-buttons">
+            <button id="rotateItem" class="secondary-button">↻ Rotate</button>
+            <button id="removeItem" class="secondary-button">Remove</button>
+          </div>
+        </div>
+
+        <div class="room-tabs">
+          <button class="room-tab active" data-category="furniture">Furniture</button>
+          <button class="room-tab" data-category="decor">Decor</button>
+          <button class="room-tab" data-category="garden">Garden</button>
+          <button class="room-tab" data-category="walls">Wall colors</button>
+          <button class="room-tab" data-category="rooms">New rooms</button>
+        </div>
+
+        <div class="shop-section">
+          <div class="shop-heading">
+            <h2 id="shopTitle">Furniture shop</h2>
+            <span>🪙 <span id="shopCoins">100</span></span>
+          </div>
+          <div id="shopMessage" class="shop-message"></div>
+          <div id="shopGrid" class="shop-grid"></div>
+        </div>
+
+        <div class="inventory-section">
+          <h2>My furniture collection</h2>
+          <p>Choose something you already own and place it in your room.</p>
+          <div id="inventoryGrid" class="inventory-grid"></div>
+        </div>
+      </section>
+
+      <!-- BRUSHING ROUTINE -->
+      <section id="streaks" class="screen hidden">
+        <button class="back-button" onclick="showScreen('world')">← Back to my world</button>
+        <div class="section-heading">
+          <p class="eyebrow">HEALTHY LITTLE HABITS</p>
+          <h1>Brushing Routine</h1>
+          <p>Brush twice a day for two minutes each time!</p>
+        </div>
+
+        <div class="routine-grid">
+          <div class="routine-card">
+            <div class="routine-icon">🌞</div>
+            <h2>Morning brushing</h2>
+            <p>Start your day with a fresh smile.</p>
+            <strong id="morningState">Not completed yet</strong>
+            <button id="morningStart" class="primary-button">Start morning timer</button>
+          </div>
+
+          <div class="routine-card">
+            <div class="routine-icon">🌙</div>
+            <h2>Evening brushing</h2>
+            <p>Clean your teeth before bedtime.</p>
+            <strong id="eveningState">Not completed yet</strong>
+            <button id="eveningStart" class="primary-button">Start evening timer</button>
+          </div>
+        </div>
+
+        <div class="timer-card">
+          <p>YOUR BRUSHING TIMER</p>
+          <div id="timerDisplay" class="timer-display">02:00</div>
+          <p id="timerMessage">Choose morning or evening brushing to begin.</p>
+          <button id="stopTimer" class="secondary-button">Stop timer</button>
+        </div>
+
+        <div class="streak-card">
+          <h2>My healthy smile streak</h2>
+          <div class="streak-number">🔥 <span id="streakDays">0</span> days</div>
+          <p>Keep going! Every little step counts.</p>
+        </div>
+      </section>
+
+    </main>
+
+    <footer>
+      <p>Made with love for little smiles 💗</p>
+      <button onclick="showScreen('world')">My World</button>
+    </footer>
+
   </div>
-</section>
 
-<!-- WORLD -->
-<section id="world" class="screen hidden">
-  <div class="welcome">
-    <h1>Привет, <span id="playerName">друг</span>! 💗</h1>
-    <p>Куда отправимся сегодня?</p>
-  </div>
-
-  <div class="feature-grid">
-    <button class="feature-card" onclick="showScreen('rescue')">
-      <span>🪥</span><h2>Спаси зубки</h2>
-      <p>Найди и спаси застрявшую еду!</p>
-    </button>
-
-    <button class="feature-card" onclick="showScreen('anatomy')">
-      <span>🦷</span><h2>Академия зубов</h2>
-      <p>Изучай челюсть и инструменты.</p>
-    </button>
-
-    <button class="feature-card" onclick="openRoom()">
-      <span>🏡</span><h2>Мой дом</h2>
-      <p>Создай собственный уютный мир.</p>
-    </button>
-
-    <button class="feature-card" onclick="showScreen('streaks')">
-      <span>⭐</span><h2>Мои привычки</h2>
-      <p>Чисти зубы утром и вечером.</p>
-    </button>
-  </div>
-</section>
-
-<!-- SNACK -->
-<section id="snack" class="screen hidden">
-  <button class="back" onclick="showScreen('world')">← Назад</button>
-  <h1>Время перекусить! 🍎</h1>
-  <p>Выбери вкусный перекус.</p>
-
-  <div class="snack-grid">
-    <button onclick="chooseSnack('Яблоко','🍎')">🍎<br>Яблоко</button>
-    <button onclick="chooseSnack('Сыр','🧀')">🧀<br>Сыр</button>
-    <button onclick="chooseSnack('Хлеб','🍞')">🍞<br>Хлеб</button>
-  </div>
-
-  <div id="eatingAvatar">🧚🏻‍♀️</div>
-  <p id="eatingText">Что будем кушать?</p>
-  <button id="afterSnackBtn" class="hidden" onclick="startRescue()">Почистить зубки 🪥</button>
-</section>
-
-<!-- RESCUE -->
-<section id="rescue" class="screen hidden">
-  <button class="back" onclick="showScreen('world')">← Назад</button>
-  <h1>Спаси застрявшую еду! 🦷</h1>
-  <p>Передвигай щётку пальцем и спасай кусочки еды.</p>
-
-  <div class="mouth-game" id="mouthGame">
-    <div class="mouth-lips"></div>
-    <div class="game-teeth">
-      <div class="game-tooth">🍎</div>
-      <div class="game-tooth">🧀</div>
-      <div class="game-tooth">🍞</div>
-      <div class="game-tooth"></div>
-      <div class="game-tooth"></div>
-    </div>
-    <div class="food-crumbs" id="foodCrumbs">
-      <span class="crumb">🍎</span>
-      <span class="crumb">🧀</span>
-      <span class="crumb">🍞</span>
-    </div>
-    <div id="movingBrush">🪥</div>
-  </div>
-
-  <p>Спасено: <span id="rescuedCount">0</span>/3</p>
-  <div class="progress-track"><div id="rescueBar"></div></div>
-  <p id="rescueMessage">Вперёд, у тебя получится!</p>
-  <button id="rescueContinue" class="hidden" onclick="finishRescue()">Забрать награду ⭐</button>
-</section>
-
-<!-- ANATOMY -->
-<section id="anatomy" class="screen hidden">
-  <button class="back" onclick="showScreen('world')">← Назад</button>
-  <h1>Академия зубов 🦷</h1>
-
-  <div class="academy-tabs">
-    <button onclick="showAcademyTab('jaw')">Строение рта</button>
-    <button onclick="showAcademyTab('tools')">Инструменты</button>
-  </div>
-
-  <div id="jawTab">
-    <h2>Изучи части рта</h2>
-    <p>Нажми на часть челюсти, чтобы узнать о ней.</p>
-
-    <div class="jaw-model">
-      <div class="jaw-label">ВЕРХНЯЯ ЧЕЛЮСТЬ</div>
-      <div class="jaw-row" id="upperJaw">
-        <button class="tooth" data-part="Резцы">🦷</button>
-        <button class="tooth" data-part="Резцы">🦷</button>
-        <button class="tooth" data-part="Клыки">🦷</button>
-        <button class="tooth" data-part="Малые коренные">🦷</button>
-        <button class="tooth" data-part="Большие коренные">🦷</button>
-        <button class="tooth" data-part="Большие коренные">🦷</button>
-      </div>
-      <div class="jaw-gap">ЯЗЫК И ПОЛОСТЬ РТА</div>
-      <div class="jaw-row" id="lowerJaw">
-        <button class="tooth" data-part="Большие коренные">🦷</button>
-        <button class="tooth" data-part="Малые коренные">🦷</button>
-        <button class="tooth" data-part="Клыки">🦷</button>
-        <button class="tooth" data-part="Резцы">🦷</button>
-        <button class="tooth" data-part="Резцы">🦷</button>
-        <button class="tooth" data-part="Клыки">🦷</button>
-      </div>
-      <div class="jaw-label">НИЖНЯЯ ЧЕЛЮСТЬ</div>
-    </div>
-
-    <div class="anatomy-info" id="anatomyInfo">
-      <h3>Выбери зуб</h3>
-      <p>Здесь появится интересная информация.</p>
-    </div>
-
-    <div class="extra-parts">
-      <button onclick="showPart('Дёсны')">Дёсны</button>
-      <button onclick="showPart('Язык')">Язык</button>
-      <button onclick="showPart('Губы')">Губы</button>
-      <button onclick="showPart('Нёбо')">Нёбо</button>
-    </div>
-  </div>
-
-  <div id="toolsTab" class="hidden">
-    <h2>Инструменты для ухода</h2>
-    <div class="tools-grid">
-      <button onclick="showTool('Зубная щётка','Помогает удалять налёт с поверхности зубов.')">🪥<br>Зубная щётка</button>
-      <button onclick="showTool('Электрическая щётка','Помогает очищать зубы с помощью движения щетинок.')">⚡<br>Электрическая щётка</button>
-      <button onclick="showTool('Зубная паста','Помогает защищать зубы от кариеса.')">🧴<br>Зубная паста</button>
-      <button onclick="showTool('Зубная нить','Очищает промежутки между зубами.')">🧵<br>Зубная нить</button>
-      <button onclick="showTool('Ирригатор','Направляет струю воды для очищения промежутков.')">💧<br>Ирригатор</button>
-      <button onclick="showTool('Ополаскиватель','Дополняет ежедневный уход за полостью рта.')">🫧<br>Ополаскиватель</button>
-      <button onclick="showTool('Межзубный ёршик','Помогает очищать промежутки между зубами.')">🪥<br>Ёршик</button>
-      <button onclick="showTool('Скребок для языка','Помогает очищать поверхность языка.')">👅<br>Скребок</button>
-    </div>
-    <div id="toolInfo" class="anatomy-info">Выбери инструмент, чтобы узнать о нём.</div>
-  </div>
-</section>
-
-<!-- ROOM -->
-<section id="room" class="screen hidden">
-  <button class="back" onclick="showScreen('world')">← Назад</button>
-  <h1>Мой уютный мир 🏡</h1>
-
-  <div class="room-tabs">
-    <button onclick="showShop('furniture')">Мебель</button>
-    <button onclick="showShop('decor')">Декор</button>
-    <button onclick="showShop('wall')">Стены</button>
-    <button onclick="showShop('garden')">Сад</button>
-    <button onclick="showShop('rooms')">Комнаты</button>
-  </div>
-
-  <div id="roomStage" class="room-stage">
-    <div id="roomItems"></div>
-  </div>
-
-  <div class="size-control">
-    <label for="itemSize">Размер выбранного предмета</label>
-    <input id="itemSize" type="range" min="50" max="150" value="100">
-  </div>
-
-  <h2>Магазин</h2>
-  <p id="shopMessage">Выбирай предметы для своего дома!</p>
-  <div id="shopGrid" class="shop-grid"></div>
-</section>
-
-<!-- STREAKS -->
-<section id="streaks" class="screen hidden">
-  <button class="back" onclick="showScreen('world')">← Назад</button>
-  <h1>Мои полезные привычки ⭐</h1>
-  <div class="streak-card">
-    <h2>🌞 Утренний уход</h2>
-    <p>Чистим зубки утром.</p>
-    <button id="morningStart" onclick="startTimer('morning')">Начать утреннюю чистку</button>
-    <p id="morningTime">02:00</p>
-    <p id="morningState"></p>
-  </div>
-
-  <div class="streak-card">
-    <h2>🌙 Вечерний уход</h2>
-    <p>Чистим зубки перед сном.</p>
-    <button id="eveningStart" onclick="startTimer('evening')">Начать вечернюю чистку</button>
-    <p id="eveningTime">02:00</p>
-    <p id="eveningState"></p>
-  </div>
-
-  <p id="timerMessage"></p>
-  <button id="stopTimer" class="hidden" onclick="stopTimer()">Остановить таймер</button>
-  <h2>Мои достижения</h2>
-  <div id="streakDays">⭐ Пока только начало!</div>
-</section>
-
-</main>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
-
