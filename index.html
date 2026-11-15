@@ -13,6 +13,23 @@
     <p>Little smiles, big adventures!</p>
   </header>
 
+  <!-- SIDEBAR INSTRUCTION DRAWER (Вкладочка с инструкцией сбоку) -->
+  <div id="sideDrawer" class="side-drawer">
+    <button id="drawerToggle" onclick="toggleDrawer()">📖 Guide ✨</button>
+    <div class="drawer-content">
+      <h3>🌟 Brushing Steps</h3>
+      <ul id="drawerStepsList">
+        <!-- Заполняется динамически -->
+      </ul>
+    </div>
+  </div>
+
+  <!-- FAIRY HELP BUTTON (Кнопка подсказки феи) -->
+  <div id="fairyHelper" class="fairy-helper" onclick="showFairyHint()">
+    <span class="fairy-icon">🧚‍♀️✨</span>
+    <span class="fairy-bubble-hint" id="fairyHintText">Need help? Tap me! 💕</span>
+  </div>
+
   <main id="app">
 
     <!-- WELCOME SCREEN -->
@@ -139,26 +156,26 @@
       </div>
 
       <p id="snackMessage">Choose your snack! 💗</p>
-
       <button onclick="finishSnack()">I'm ready!</button>
     </section>
 
-    <!-- BRUSH & RESCUE -->
+    <!-- BRUSH & RESCUE (С полноценной челюстью как на референсе) -->
     <section id="rescueScreen" class="hidden">
       <h1>🦷 Brush & Rescue!</h1>
       <div class="fairy">🧚‍♀️</div>
       <h2 id="rescueSubtitle">Oh! Little pieces are stuck!</h2>
       <p id="rescueCry" class="speech-bubble">«Rescue us please, or we'll make the tooth decay! 😭»</p>
 
-      <div id="rescueMouth" class="rescue-mouth">
-        <div class="rescue-teeth">
-          <div class="game-tooth"></div>
-          <div class="game-tooth"></div>
-          <div class="game-tooth"></div>
-          <div class="game-tooth"></div>
-          <div class="game-tooth"></div>
+      <div id="rescueMouth" class="rescue-mouth-realistic">
+        <!-- Полноценная верхняя и нижняя челюсть -->
+        <div class="jaw upper-jaw">
+          <div class="realistic-tooth"></div><div class="realistic-tooth"></div><div class="realistic-tooth"></div><div class="realistic-tooth"></div><div class="realistic-tooth"></div><div class="realistic-tooth"></div>
+        </div>
+        <div class="jaw lower-jaw">
+          <div class="realistic-tooth"></div><div class="realistic-tooth"></div><div class="realistic-tooth"></div><div class="realistic-tooth"></div><div class="realistic-tooth"></div><div class="realistic-tooth"></div>
         </div>
 
+        <!-- Кусочки строго выбранной еды -->
         <div id="foodCrumbs" class="food-crumbs">
           <span class="crumb dynamic-crumb">🍎</span>
           <span class="crumb dynamic-crumb">🍎</span>
@@ -178,15 +195,21 @@
       </button>
     </section>
 
-    <!-- TOOTH ACADEMY (14 STEPS INSTRUCTION) -->
+    <!-- TOOTH ACADEMY (14 шаг с пастой и выдавливанием) -->
     <section id="academyScreen" class="hidden">
       <h1>🦷 Tooth Academy</h1>
       <div class="fairy">🧚‍♀️✨</div>
       <div id="academyStepBox" class="academy-box">
         <h2 id="academyTitle">Step 1</h2>
         <p id="academyDesc">Pick up your toothbrush.</p>
+        
+        <!-- Интерактивная зона для пасты или действий -->
+        <div id="academyInteractiveArea" class="academy-interactive">
+          <!-- Сюда динамически добавляется тюбик пасты для Шага 2 -->
+        </div>
+
         <div id="academyActionArea" class="academy-action-area">
-          <button id="academyActionBtn" onclick="performAcademyAction()">Pick up 🪥 (+10 ⭐)</button>
+          <button id="academyActionBtn" onclick="performAcademyAction()">Done! (+10 ⭐)</button>
         </div>
       </div>
       <p style="font-size: 14px; color: #9c84b8; margin-top: 15px;">Step <span id="currentStepNum">1</span> of 14</p>
@@ -240,5 +263,3 @@
 
 </body>
 </html>
-
-
