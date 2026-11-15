@@ -7,14 +7,13 @@ let child = {
   eyes: "#65432d",
   outfit: "#a88be0",
   clothes: "shirt",
-  coins: 100, // Даем стартовый бонус 100 монеток для проверки магазина!
+  coins: 200, // Стартовый бонус для проверки покупок
   streak: 0,
   lastBrushDate: "",
   morningDone: false,
   nightDone: false,
   inventory: [],
-  currentWallColor: "#fdfcff",
-  currentCarpet: "none"
+  currentWallColor: "#fdfcff"
 };
 
 function loadProfile() {
@@ -22,7 +21,7 @@ function loadProfile() {
   if (saved) {
     try {
       child = JSON.parse(saved);
-      if (typeof child.coins === 'undefined') child.coins = 100;
+      if (typeof child.coins === 'undefined') child.coins = 200;
     } catch(e) { console.error(e); }
   }
 }
@@ -45,16 +44,37 @@ function openScreen(screenId) {
   if (screenId !== 'welcomeScreen' && screenId !== 'profileScreen') {
     document.getElementById("headerStats").style.display = "flex";
   }
+  if (screenId === 'jawExploreScreen') {
+    document.getElementById("anatomyStudyView").classList.remove("hidden");
+    document.getElementById("anatomyPuzzleView").classList.add("hidden");
+  }
+  if (screenId === 'houseScreen') {
+    switchShopTab('walls');
+  }
 }
 
-// --- Profile & Creator ---
+// --- Profile & Creator (с переключением шорт и платья) ---
 const avatar = document.getElementById("avatar");
+const avatarBodyEl = document.getElementById("avatarBodyEl");
+const avatarShortsEl = document.getElementById("avatarShortsEl");
 
 function updateAvatarDisplay() {
   avatar.style.setProperty("--skin", child.skin);
   avatar.style.setProperty("--hair", child.hair);
   avatar.style.setProperty("--eyes", child.eyes);
   avatar.style.setProperty("--outfit", child.outfit);
+
+  if (child.clothes === 'dress') {
+    avatarBodyEl.style.height = "100px";
+    avatarBodyEl.style.borderRadius = "20px 20px 35px 35px";
+    avatarBodyEl.style.clipPath = "polygon(15% 0, 85% 0, 100% 100%, 0 100%)";
+    avatarShortsEl.style.display = "none";
+  } else {
+    avatarBodyEl.style.height = "75px";
+    avatarBodyEl.style.borderRadius = "20px 20px 10px 10px";
+    avatarBodyEl.style.clipPath = "none";
+    avatarShortsEl.style.display = "block";
+  }
 }
 
 document.querySelectorAll(".color-choice").forEach(btn => {
@@ -73,6 +93,7 @@ document.querySelectorAll(".outfit-choice").forEach(btn => {
     child.clothes = btn.dataset.outfit;
     document.querySelectorAll(".outfit-choice").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
+    updateAvatarDisplay();
   });
 });
 
@@ -87,10 +108,11 @@ document.getElementById("profileForm").addEventListener("submit", (e) => {
   saveProfile();
   document.getElementById("worldChildName").textContent = child.name;
   openScreen("worldScreen");
+  updateAvatarDisplay();
 });
 
 
-// --- Brushing & Cleaning Flow ---
+// --- Brushing & Cleaning Flow (с валидацией пасты и воды) ---
 const brushingSteps = [
   { title: "Step 1: Apply Toothpaste", desc: "Drag the toothpaste onto your toothbrush to apply paste!" },
   { title: "Step 2: Brush Upper & Lower Teeth", desc: "Use your finger to move the toothbrush all over the teeth." },
@@ -138,7 +160,7 @@ function nextBrushStep() {
   }
 }
 
-// Интерактивное перетаскивание щетки, пасты и воды пальцем
+// Перетаскивание щетки, пасты и воды
 const toothbrushEl = document.getElementById("draggableToothbrush");
 const mouthBoard = document.getElementById("interactiveMouthBoard");
 const tubeEl = document.getElementById("toothpasteTube");
@@ -163,24 +185,18 @@ toothbrushEl.addEventListener("pointermove", (e) => {
   const tableRect = document.getElementById("brushingTable").getBoundingClientRect();
   const brushRect = toothbrushEl.getBoundingClientRect();
 
-  if (newX >= 0 && newX <= tableRect.width - brushRect.width) {
-    toothbrushEl.style.left = newX + "px";
-  }
-  if (newY >= 0 && newY <= tableRect.height - brushRect.height) {
-    toothbrushEl.style.top = newY + "px";
-  }
+  if (newX >= 0 && newX <= tableRect.width - brushRect.width) toothbrushEl.style.left = newX + "px";
+  if (newY >= 0 && newY <= tableRect.height - brushRect.height) toothbrushEl.style.top = newY + "px";
 
-  // Проверка взаимодействия с пастой на Шаге 1
   if (currentBrushStep === 0 && !hasPaste) {
     const tubeRect = tubeEl.getBoundingClientRect();
     if (Math.abs(brushRect.x - tubeRect.x) < 50 && Math.abs(brushRect.y - tubeRect.y) < 50) {
       hasPaste = true;
-      toothbrushEl.textContent = "🪥✨ (With Paste)";
+      toothbrushEl.textContent = "🪥✨";
       alert("Toothpaste applied to toothbrush! ✨");
     }
   }
 
-  // Проверка взаимодействия с водой на Шаге 3
   if (currentBrushStep === 2 && !hasRinsed) {
     const waterRect = waterEl.getBoundingClientRect();
     if (Math.abs(brushRect.x - waterRect.x) < 50 && Math.abs(brushRect.y - waterRect.y) < 50) {
@@ -196,6 +212,53 @@ function stopDrag(e) {
 }
 toothbrushEl.addEventListener("pointerup", stopDrag);
 toothbrushEl.addEventListener("pointercancel", stopDrag);
+
+
+// --- Full Mouth Anatomy Puzzle ---
+function startFullMouthPuzzle() {
+  document.getElementById("anatomyStudyView").classList.add("hidden");
+  document.getElementById("anatomyPuzzleView").classList.remove("hidden");
+
+  const pool = document.getElementById("puzzlePiecesPool");
+  pool.innerHTML = "";
+  document.getElementById("puzzleFeedback").textContent = "";
+
+  const labels = ["Top Lip", "Upper Gums", "Molars", "Canines", "Incisors", "Tongue", "Lower Gums", "Bottom Lip"];
+  const shuffled = [...labels].sort(() => Math.random() - 0.5);
+
+  shuffled.forEach(label => {
+    const p = document.createElement("div");
+    p.className = "puzzle-drag-piece";
+    p.textContent = label;
+    p.draggable = true;
+    p.addEventListener("dragstart", (e) => e.dataTransfer.setData("text/plain", label));
+    pool.appendChild(p);
+  });
+
+  document.querySelectorAll(".puzzle-drop-zone").forEach(zone => {
+    zone.classList.remove("filled");
+    zone.textContent = `Drop ${zone.dataset.target} Here`;
+    zone.addEventListener("dragover", (e) => e.preventDefault());
+    zone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const draggedLabel = e.dataTransfer.getData("text/plain");
+      if (draggedLabel === zone.dataset.target) {
+        zone.textContent = `✅ ${draggedLabel}`;
+        zone.classList.add("filled");
+        
+        // Проверка победы
+        const allFilled = Array.from(document.querySelectorAll(".puzzle-drop-zone")).every(z => z.classList.contains("filled"));
+        if (allFilled) {
+          child.coins += 50;
+          saveProfile();
+          document.getElementById("puzzleFeedback").textContent = "🎉 Incredible! Full mouth successfully assembled! +50 coins!";
+        }
+      } else {
+        document.getElementById("puzzleFeedback").textContent = "❌ Not quite right here, try another zone!";
+      }
+    });
+  });
+}
 
 
 // --- Streaks & Timers ---
@@ -273,54 +336,7 @@ function finishBrushingSession(session) {
 }
 
 
-// --- Jaw Puzzle Game ---
-function startToothPuzzle() {
-  document.getElementById("puzzleContainer").classList.remove("hidden");
-  const slotsBox = document.getElementById("puzzleSlots");
-  const piecesBox = document.getElementById("puzzlePieces");
-  slotsBox.innerHTML = "";
-  piecesBox.innerHTML = "";
-
-  const teethTypes = ["Incisor", "Canine", "Molar"];
-  teethTypes.forEach(type => {
-    const slot = document.createElement("div");
-    slot.className = "puzzle-slot";
-    slot.dataset.expected = type;
-    slot.textContent = `Drop ${type}`;
-    slotsBox.appendChild(slot);
-  });
-
-  // Перемешанные кусочки
-  const shuffled = [...teethTypes].sort(() => Math.random() - 0.5);
-  shuffled.forEach(type => {
-    const piece = document.createElement("div");
-    piece.className = "puzzle-piece";
-    piece.textContent = type;
-    piece.draggable = true;
-    piece.addEventListener("dragstart", (e) => e.dataTransfer.setData("text/plain", type));
-    piecesBox.appendChild(piece);
-  });
-
-  slotsBox.querySelectorAll(".puzzle-slot").forEach(slot => {
-    slot.addEventListener("dragover", (e) => e.preventDefault());
-    slot.addEventListener("drop", (e) => {
-      e.preventDefault();
-      const droppedType = e.dataTransfer.getData("text/plain");
-      if (droppedType === slot.dataset.expected) {
-        slot.textContent = `✅ ${droppedType}`;
-        slot.style.background = "#e2f8e9";
-        child.coins += 10;
-        saveProfile();
-        document.getElementById("puzzleResult").textContent = "Correct match! +10 coins ✨";
-      } else {
-        document.getElementById("puzzleResult").textContent = "Oops, try another slot!";
-      }
-    });
-  });
-}
-
-
-// --- Shop & Room Customization ---
+// --- Shop & Room Customization (fully fixed and filled) ---
 const shopItems = {
   walls: [
     { id: 'wall_pink', name: 'Pink Wall', price: 30, type: 'wall', color: '#ffecf2' },
@@ -358,7 +374,7 @@ function switchShopTab(category) {
     card.className = "shop-card";
     card.innerHTML = `
       <p>${item.icon || '🎨'} <b>${item.name}</b><br>🪙 ${item.price}</p>
-      <button onclick="buyShopItem('${item.id}', ${item.price}, '${item.type || 'item'}', '${item.color || item.icon}')" ${isOwned && item.type !== 'wall' ? 'disabled' : ''}>
+      <button onclick="buyShopItem('${item.id}', ${item.price}, '${item.type || category}', '${item.color || item.icon}')" ${isOwned && item.type !== 'wall' ? 'disabled' : ''}>
         ${isOwned && item.type !== 'wall' ? 'Owned' : 'Buy'}
       </button>
     `;
@@ -366,24 +382,24 @@ function switchShopTab(category) {
   });
 }
 
-function buyShopItem(id, price, type, value) {
+function buyShopItem(id, price, category, value) {
   if (child.coins < price) {
     alert("Not enough coins! Earn more through brushing and daily streaks.");
     return;
   }
 
   child.coins -= price;
-  if (!child.inventory.includes(id) || type === 'wall') {
+  if (!child.inventory.includes(id) || category === 'walls') {
     child.inventory.push(id);
   }
 
-  if (type === 'wall') {
+  if (category === 'walls') {
     child.currentWallColor = value;
   }
 
   saveProfile();
   updateRoomDisplay();
-  switchShopTab(type === 'wall' ? 'walls' : 'furniture');
+  switchShopTab(category);
   alert(`Successfully bought!`);
 }
 
@@ -395,7 +411,22 @@ function updateRoomDisplay() {
   if (child.inventory.length === 0) {
     itemsBox.textContent = "🛏️ (Empty room. Buy furniture in shop!)";
   } else {
-    itemsBox.innerHTML = child.inventory.map(i => `<span style="font-size:28px; margin: 5px;">✨</span>`).join(" ");
+    itemsBox.innerHTML = child.inventory.map(i => {
+      let icon = "✨";
+      if (i === 'sofa') icon = "🛋️";
+      if (i === 'bed') icon = "🛏️";
+      if (i === 'tv') icon = "📺";
+      if (i === 'computer') icon = "💻";
+      if (i === 'lamp') icon = "🏮";
+      if (i === 'kitchen') icon = "🍳";
+      if (i === 'bathroom') icon = "🛁";
+      if (i === 'expansion') icon = "🏰";
+      if (i === 'rose') icon = "🌹";
+      if (i === 'ficus') icon = "🪴";
+      if (i === 'painting') icon = "🖼️";
+      if (i === 'garden_area') icon = "🌳";
+      return `<span style="font-size:32px; margin: 6px; display:inline-block;">${icon}</span>`;
+    }).join(" ");
   }
 }
 
@@ -406,8 +437,8 @@ window.addEventListener("DOMContentLoaded", () => {
   updateAvatarDisplay();
   checkStreakDate();
   updateRoomDisplay();
-  switchShopTab('walls');
   if (child.name) {
     document.getElementById("worldChildName").textContent = child.name;
+    updateAvatarDisplay();
   }
 });
