@@ -62,8 +62,8 @@
             <div class="eyes"><span></span><span></span></div>
             <div class="smile"></div>
           </div>
-          <div class="avatar-body"></div>
-          <div class="avatar-shorts"></div>
+          <div class="avatar-body" id="avatarBodyEl"></div>
+          <div class="avatar-shorts" id="avatarShortsEl"></div>
           <div class="avatar-legs"><span></span><span></span></div>
         </div>
 
@@ -117,7 +117,7 @@
         <button class="hub-card primary-card" onclick="startEducationFlow()">
           <span class="hub-icon">🎓</span>
           <h3>Brushing & Cleaning</h3>
-          <p>Interactive brushing with real paste & water</p>
+          <p>Interactive brushing with real paste & water validation</p>
         </button>
 
         <button class="hub-card" onclick="openScreen('streakScreen')">
@@ -129,22 +129,22 @@
         <button class="hub-card" onclick="openScreen('jawExploreScreen')">
           <span class="hub-icon">🦷</span>
           <h3>Explore Human Jaw</h3>
-          <p>Learn tooth names & play puzzle</p>
+          <p>Full mouth anatomy, gums, tongue & drag-and-drop puzzle</p>
         </button>
 
         <button class="hub-card" onclick="openScreen('houseScreen')">
           <span class="hub-icon">🏡</span>
-          <h3>My World & House</h3>
+          <h3>My World & Shop</h3>
           <p>Buy furniture, wallpapers, carpets & garden</p>
         </button>
       </div>
     </section>
 
-    <!-- 4. EDUCATION & JAW BRUSHING (С пастой, водой и свободной щеткой) -->
+    <!-- 4. EDUCATION & JAW BRUSHING -->
     <section id="educationScreen" class="screen hidden">
       <div class="edu-top-bar">
         <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
-        <span id="eduLevelIndicator" class="level-indicator">Step 1 of 5</span>
+        <span id="eduLevelIndicator" class="level-indicator">Step 1 of 3</span>
         <span class="coins-earned">🪙 <span id="eduCoinsCount">0</span></span>
       </div>
 
@@ -152,15 +152,12 @@
         <h2 id="eduStepTitle">Step 1: Apply Toothpaste</h2>
         <p id="eduStepDesc">Drag the toothpaste onto your toothbrush to apply paste!</p>
 
-        <!-- Интерактивный стол с пастой, водой и челюстью -->
         <div class="brushing-table" id="brushingTable">
-          <!-- Инструменты -->
           <div class="tools-tray">
             <div id="toothpasteTube" class="tool-item"><span class="tool-icon">🧪</span><br>Toothpaste</div>
             <div id="waterCup" class="tool-item"><span class="tool-icon">🥤</span><br>Water Cup</div>
           </div>
 
-          <!-- Наша человеческая челюсть для чистки пальцем -->
           <div class="human-jaw-board" id="interactiveMouthBoard">
             <div class="jaw-row upper-jaw">
               <span class="jaw-tooth molar">Molar</span>
@@ -184,7 +181,6 @@
             </div>
           </div>
 
-          <!-- Зубная щетка, которую ребёнок водит по экрану -->
           <div id="draggableToothbrush" class="draggable-toothbrush">🪥</div>
         </div>
 
@@ -225,44 +221,75 @@
       </div>
     </section>
 
-    <!-- 6. EXPLORE JAW & PUZZLES (Изучение челюсти и пазл) -->
+    <!-- 6. EXPLORE JAW & FULL MOUTH ANATOMY PUZZLE -->
     <section id="jawExploreScreen" class="screen hidden">
       <div class="edu-top-bar">
         <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
-        <h2>🦷 Human Jaw & Tooth Anatomy</h2>
+        <h2>🦷 Full Mouth Anatomy & Puzzle</h2>
         <span></span>
       </div>
       <div class="explore-content-box">
-        <h3>Anatomy of Human Mouth</h3>
-        <p>Look at your teeth! <b>Incisors</b> are in the front for cutting food. <b>Canines</b> are pointed for tearing. <b>Premolars and Molars</b> in the back are flat for crushing and grinding food.</p>
-        
-        <!-- Крупная наглядная челюсть с названиями -->
-        <div class="large-anatomy-jaw">
-          <div class="anatomy-row">
-            <span class="tooth-label-card">Molar (Grinding)</span>
-            <span class="tooth-label-card">Premolar</span>
-            <span class="tooth-label-card">Incisor (Bbiting)</span>
-            <span class="tooth-label-card">Incisor</span>
-            <span class="tooth-label-card">Incisor</span>
-            <span class="tooth-label-card">Incisor</span>
-            <span class="tooth-label-card">Premolar</span>
-            <span class="tooth-label-card">Molar (Grinding)</span>
+        <div id="anatomyStudyView">
+          <h3>Full Mouth Anatomy Study</h3>
+          <p>Examine the full mouth structure: Upper Jaw, Lower Jaw, Gums, Tongue, Lips, Incisors, Canines, and Molars. Memorize where everything is!</p>
+          
+          <div class="full-mouth-container">
+            <div class="mouth-lips upper-lip">Top Lip 👄</div>
+            <div class="mouth-gums upper-gums">Upper Gums (Pink)</div>
+            <div class="anatomy-jaw-row">
+              <span class="anatomy-tag">Molar</span>
+              <span class="anatomy-tag">Premolar</span>
+              <span class="anatomy-tag">Canine</span>
+              <span class="anatomy-tag">Incisor</span>
+              <span class="anatomy-tag">Incisor</span>
+              <span class="anatomy-tag">Canine</span>
+              <span class="anatomy-tag">Premolar</span>
+              <span class="anatomy-tag">Molar</span>
+            </div>
+            <div class="mouth-tongue">👅 Tongue (Fresh & Clean)</div>
+            <div class="anatomy-jaw-row">
+              <span class="anatomy-tag">Molar</span>
+              <span class="anatomy-tag">Premolar</span>
+              <span class="anatomy-tag">Canine</span>
+              <span class="anatomy-tag">Incisor</span>
+              <span class="anatomy-tag">Incisor</span>
+              <span class="anatomy-tag">Canine</span>
+              <span class="anatomy-tag">Premolar</span>
+              <span class="anatomy-tag">Molar</span>
+            </div>
+            <div class="mouth-gums lower-gums">Lower Gums (Pink)</div>
+            <div class="mouth-lips lower-lip">Bottom Lip 👄</div>
           </div>
+
+          <button class="magical-btn" onclick="startFullMouthPuzzle()">I memorized it! Start Drag-and-Drop Puzzle 🧩</button>
         </div>
 
-        <button class="magical-btn" onclick="startToothPuzzle()">I memorized it! Start Puzzle Game 🧩</button>
+        <div id="anatomyPuzzleView" class="hidden">
+          <h3>🧩 Assemble the Full Mouth!</h3>
+          <p>Drag the labels to their correct target zones in the mouth!</p>
+          
+          <div class="full-mouth-container puzzle-board">
+            <div class="mouth-lips upper-lip puzzle-drop-zone" data-target="Top Lip">Drop Top Lip Here</div>
+            <div class="mouth-gums upper-gums puzzle-drop-zone" data-target="Upper Gums">Drop Upper Gums Here</div>
+            <div class="puzzle-slot-row">
+              <span class="puzzle-drop-zone" data-target="Molars">Molars</span>
+              <span class="puzzle-drop-zone" data-target="Canines">Canines</span>
+              <span class="puzzle-drop-zone" data-target="Incisors">Incisors</span>
+            </div>
+            <div class="mouth-tongue puzzle-drop-zone" data-target="Tongue">Drop Tongue Here</div>
+            <div class="mouth-gums lower-gums puzzle-drop-zone" data-target="Lower Gums">Drop Lower Gums Here</div>
+            <div class="mouth-lips lower-lip puzzle-drop-zone" data-target="Bottom Lip">Drop Bottom Lip Here</div>
+          </div>
 
-        <div class="puzzle-mini-card hidden" id="puzzleContainer">
-          <h4>🧩 Tooth Puzzle Challenge</h4>
-          <p id="puzzleInstruction">Match the correct teeth to their places!</p>
-          <div id="puzzleSlots" class="puzzle-slots"></div>
-          <div id="puzzlePieces" class="puzzle-pieces"></div>
-          <p id="puzzleResult" style="font-weight: bold; margin-top: 10px;"></p>
+          <div class="puzzle-pieces-pool" id="puzzlePiecesPool">
+            <!-- Драг-элементы заносятся через JS -->
+          </div>
+          <p id="puzzleFeedback" style="font-weight: bold; margin-top: 15px;"></p>
         </div>
       </div>
     </section>
 
-    <!-- 7. HOUSE & SHOP (Мой мир, обои, ковры, мебель, техника, сад) -->
+    <!-- 7. HOUSE & SHOP -->
     <section id="houseScreen" class="screen hidden">
       <div class="edu-top-bar">
         <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
@@ -271,13 +298,11 @@
       </div>
 
       <div class="house-container">
-        <!-- Комната игрока (меняет обои и ковры) -->
         <div class="house-room" id="myRoom" style="background-color: #fdfcff;">
           <h3>Your Cozy Room & Garden</h3>
-          <div class="room-preview-items" id="roomPreviewItems">🛏️ (Empty room. Buy furniture below!)</div>
+          <div class="room-preview-items" id="roomPreviewItems">🛏️ (Empty room. Buy furniture in shop below!)</div>
         </div>
 
-        <!-- Магазин по категориям -->
         <div class="shop-tabs">
           <button class="tab-btn active" onclick="switchShopTab('walls')">Walls & Carpets</button>
           <button class="tab-btn" onclick="switchShopTab('furniture')">Furniture & Tech</button>
