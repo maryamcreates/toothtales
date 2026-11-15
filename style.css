@@ -25,11 +25,102 @@ header p, footer {
   color: #a18da9;
 }
 
+/* SIDE DRAWER (Выдвижная вкладка с гидом) */
+.side-drawer {
+  position: fixed;
+  top: 90px;
+  left: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+}
+
+#drawerToggle {
+  background: #aa8bd0;
+  color: white;
+  border: none;
+  border-radius: 0 15px 15px 0;
+  padding: 12px 15px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 3px 3px 10px rgba(0,0,0,0.1);
+  font-size: 15px;
+}
+
+.drawer-content {
+  background: white;
+  border: 3px solid #e6d9f4;
+  border-radius: 0 20px 20px 0;
+  width: 260px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 15px;
+  display: none;
+  text-align: left;
+  box-shadow: 5px 5px 20px rgba(0,0,0,0.1);
+}
+
+.drawer-content.open {
+  display: block;
+}
+
+.drawer-content h3 {
+  color: #8c69b5;
+  margin-top: 0;
+  font-size: 16px;
+  text-align: center;
+}
+
+.drawer-content ul {
+  padding-left: 20px;
+  margin: 0;
+  font-size: 13px;
+  color: #7a688a;
+}
+
+.drawer-content li {
+  margin-bottom: 8px;
+}
+
+.drawer-content li.completed {
+  text-decoration: line-through;
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+/* FAIRY HELPER (Кнопка подсказки феи) */
+.fairy-helper {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: white;
+  border: 3px solid #ffd1e8;
+  border-radius: 50px;
+  padding: 8px 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 182, 193, 0.4);
+  animation: bounce 2s infinite;
+}
+
+.fairy-icon {
+  font-size: 28px;
+}
+
+.fairy-bubble-hint {
+  font-size: 13px;
+  color: #a78bd4;
+  font-weight: bold;
+}
+
 main {
-  max-width: 650px;
+  max-width: 680px;
   margin: 20px auto;
   padding: 30px 20px;
-  background: rgba(255,255,255,0.82);
+  background: rgba(255,255,255,0.88);
   border-radius: 35px;
   box-shadow: 0 12px 35px #b9a5ca30;
 }
@@ -351,7 +442,7 @@ footer {
   margin-top: 22px;
 }
 
-/* SNACK & RESCUE */
+/* REALISTIC MOUTH & JAW FOR BRUSH & RESCUE */
 
 #mealScreen,
 #rescueScreen,
@@ -390,40 +481,47 @@ footer {
   color: #d1618a;
   display: inline-block;
   margin: 10px 0;
-  animation: pulseBubble 1.5s infinite;
 }
 
-@keyframes pulseBubble {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.03); }
-}
-
-.rescue-mouth {
-  background: #ffdce8;
-  border-radius: 50px;
-  padding: 30px 12px;
-  margin: 25px 0;
-  border: 5px solid white;
+/* Полноценная челюсть с деснами, как на фото референсе */
+.rescue-mouth-realistic {
+  background: radial-gradient(circle, #f9a8b8 0%, #e87a90 100%);
+  border-radius: 100px;
+  padding: 40px 20px;
+  margin: 25px auto;
+  border: 6px solid white;
   position: relative;
-  min-height: 220px;
+  width: 90%;
+  max-width: 520px;
+  min-height: 280px;
+  box-shadow: inset 0 10px 25px rgba(0,0,0,0.2);
   touch-action: none;
 }
 
-.rescue-teeth {
+.jaw {
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  gap: 7px;
-  padding-top: 15px;
+  gap: 6px;
+  position: absolute;
+  left: 20px;
+  right: 20px;
 }
 
-.game-tooth {
-  width: 48px;
-  height: 68px;
-  background: linear-gradient(145deg, #ffffff, #fff9e9);
-  border-radius: 45% 45% 38% 38%;
-  box-shadow: 0 5px 0 #e7cbd6;
-  position: relative;
+.upper-jaw {
+  top: 25px;
+}
+
+.lower-jaw {
+  bottom: 25px;
+}
+
+.realistic-tooth {
+  width: 42px;
+  height: 65px;
+  background: linear-gradient(145deg, #ffffff, #f3ede2);
+  border-radius: 35% 35% 45% 45%;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  border-bottom: 4px solid #e0d0c0;
 }
 
 .food-crumbs {
@@ -434,28 +532,27 @@ footer {
 
 .crumb {
   position: absolute;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: white;
   border-radius: 50%;
-  font-size: 23px;
+  font-size: 24px;
   box-shadow: 0 3px 8px #d9b7c9;
   pointer-events: none;
-  transition: opacity 0.3s, transform 0.3s;
-  touch-action: none;
+  transition: all 0.3s ease;
   user-select: none;
 }
 
-.crumb:nth-child(1) { left: 22%; top: 112px; }
-.crumb:nth-child(2) { left: 47%; top: 112px; }
-.crumb:nth-child(3) { left: 72%; top: 112px; }
+.crumb:nth-child(1) { left: 28%; top: 100px; }
+.crumb:nth-child(2) { left: 47%; top: 120px; }
+.crumb:nth-child(3) { left: 68%; top: 100px; }
 
 .crumb.rescued {
-  opacity: 0.25;
-  transform: scale(0.5);
+  opacity: 0.2;
+  transform: scale(0.4);
 }
 
 .rescue-basket {
@@ -479,15 +576,30 @@ footer {
   padding: 25px;
   margin: 20px auto;
   box-shadow: 0 5px 15px #e8d9ef;
-  min-height: 200px;
+  min-height: 220px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 }
 
-.academy-action-area {
-  margin-top: 20px;
+.academy-interactive {
+  margin: 15px 0;
+  min-height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.paste-tube-btn {
+  background: linear-gradient(135deg, #83b8e8, #a88be0);
+  color: white;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 20px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
 /* TOOTHBRUSH */
@@ -495,13 +607,13 @@ footer {
 .toothbrush {
   font-size: 55px;
   display: inline-block;
-  padding: 12px;
+  padding: 10px;
   background: white;
   border-radius: 50%;
   box-shadow: 0 4px 12px #d9c6e8;
   position: absolute;
-  left: 10px;
-  top: 10px;
+  left: 20px;
+  top: 20px;
   z-index: 5;
   pointer-events: none;
   user-select: none;
@@ -511,4 +623,3 @@ footer {
   cursor: grabbing;
   transform: scale(1.15);
 }
-
