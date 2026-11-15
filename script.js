@@ -1,14 +1,4 @@
-const welcomeScreen = document.getElementById("welcomeScreen");
-const profileScreen = document.getElementById("profileScreen");
-const creatorScreen = document.getElementById("creatorScreen");
-const finishScreen = document.getElementById("finishScreen");
-const mealScreen = document.getElementById("mealScreen");
-const rescueScreen = document.getElementById("rescueScreen");
-const academyScreen = document.getElementById("academyScreen");
-const worldScreen = document.getElementById("worldScreen");
-
-const avatar = document.getElementById("avatar");
-
+// --- Global Game State ---
 let child = {
   name: "",
   age: "",
@@ -18,314 +8,310 @@ let child = {
   outfit: "#a88be0",
   clothes: "shirt",
   coins: 0,
-  streak: 1
+  streak: 0,
+  lastBrushDate: "",
+  morningDone: false,
+  nightDone: false,
+  inventory: []
 };
 
-// 14 пунктов урока гигиены с реальными задачами на нашей челюсти
-const academySteps = [
-  { title: "Step 1: Pick up toothbrush 🪥", desc: "Tap to pick up your toothbrush and get ready!", actionType: "normal", indicatorPos: "top: 15px; left: 15px;" },
-  { title: "Step 2: Put toothpaste on brush ✨", desc: "Tap the toothpaste tube to squeeze it onto the brush!", actionType: "toothpaste", indicatorPos: "top: 20px; left: 45%;" },
-  { title: "Step 3: Top teeth — outside 🦷", desc: "Move the brush left and right on the upper outer teeth.", actionType: "normal", indicatorPos: "top: 30px; left: 30%;" },
-  { title: "Step 4: Top teeth — inside 🌟", desc: "Brush the inner side of the upper teeth carefully.", actionType: "normal", indicatorPos: "top: 35px; left: 55%;" },
-  { title: "Step 5: Top teeth — chewing surface 🍪", desc: "Scrub back and forth right on top of the upper chewing teeth.", actionType: "normal", indicatorPos: "top: 25px; left: 65%;" },
-  { title: "Step 6: Bottom teeth — outside 😁", desc: "Move the brush left and right on your lower outer teeth.", actionType: "normal", indicatorPos: "bottom: 30px; left: 30%;" },
-  { title: "Step 7: Bottom teeth — inside ✨", desc: "Gently brush the inner side of your lower teeth.", actionType: "normal", indicatorPos: "bottom: 35px; left: 50%;" },
-  { title: "Step 8: Bottom teeth — chewing surface 🥞", desc: "Scrub back and forth on top of the lower chewing teeth.", actionType: "normal", indicatorPos: "bottom: 25px; left: 60%;" },
-  { title: "Step 9: Brush your tongue 👅", desc: "Move the brush gently across your tongue for fresh breath.", actionType: "normal", indicatorPos: "top: 45%; left: 45%;" },
-  { title: "Step 10: Spit out toothpaste 💧", desc: "Tap to spit out the foam cleanly in the sink.", actionType: "normal", indicatorPos: "top: 75%; left: 80%;" },
-  { title: "Step 11: Rinse your mouth 🥤", desc: "Take a sip of water and rinse your mouth thoroughly.", actionType: "normal", indicatorPos: "top: 45%; left: 20%;" },
-  { title: "Step 12: Wash your brush 🚿", desc: "Clean your toothbrush under sparkling running water.", actionType: "normal", indicatorPos: "top: 15px; right: 15px;" },
-  { title: "Step 13: Put the brush away 🏠", desc: "Place your clean brush safely back into its holder.", actionType: "normal", indicatorPos: "top: 10px; left: 10px;" },
-  { title: "Step 14: Smile! 😁💖", desc: "Flash a brilliant, glowing clean smile with your healthy teeth!", actionType: "normal", indicatorPos: "top: 45%; left: 45%;" }
-];
-
-let currentAcademyStep = 0;
-let stepCompleted = new Array(academySteps.length).fill(false);
-
-function showScreen(screen) {
-  [welcomeScreen, profileScreen, creatorScreen, finishScreen, mealScreen, rescueScreen, academyScreen, worldScreen]
-    .forEach(item => item.classList.add("hidden"));
-  screen.classList.remove("hidden");
-  updateDrawerList();
-}
-
-// Управление выдвижной панелью гида
-function toggleDrawer() {
-  const content = document.querySelector(".drawer-content");
-  content.classList.toggle("open");
-}
-
-function updateDrawerList() {
-  const listEl = document.getElementById("drawerStepsList");
-  if (!listEl) return;
-  listEl.innerHTML = "";
-  academySteps.forEach((st, index) => {
-    const li = document.createElement("li");
-    li.textContent = st.title;
-    if (stepCompleted[index]) {
-      li.classList.add("completed");
+// Загрузка сохраненного профиля из localStorage
+function loadProfile() {
+  const saved = localStorage.getItem("toothTalesProfile");
+  if (saved) {
+    try {
+      child = JSON.parse(saved);
+    } catch(e) {
+      console.error(e);
     }
-    listEl.appendChild(li);
-  });
+  }
 }
 
-// Функция феи-помощницы
-function showFairyHint() {
-  const hints = [
-    "You're doing amazing, little hero! ✨ Check your Guide if you need assistance!",
-    "Remember: brushing protects our incisors and molars from germs! 🦷💗",
-    "Every completed step gives you +10 coins for your adventure! 🌟",
-    "Look at our healthy human jaw — keeping it clean is so important! ✨"
-  ];
-  const randomHint = hints[Math.floor(Math.random() * hints.length)];
-  document.getElementById("fairyHintText").textContent = randomHint;
+function saveProfile() {
+  localStorage.setItem("toothTalesProfile", JSON.stringify(child));
+  updateHeaderStats();
 }
 
-document.getElementById("startButton").addEventListener("click", () => {
-  showScreen(profileScreen);
-});
+function updateHeaderStats() {
+  document.getElementById("globalCoins").textContent = child.coins;
+  document.getElementById("globalStreak").textContent = child.streak;
+  document.getElementById("shopCoins").textContent = child.coins;
+}
 
-document.getElementById("profileForm").addEventListener("submit", event => {
-  event.preventDefault();
-  child.name = document.getElementById("childName").value.trim();
-  child.age = document.getElementById("childAge").value;
-  if (!child.name || !child.age) return;
-  showScreen(creatorScreen);
-});
+// Управление экранами
+function openScreen(screenId) {
+  document.querySelectorAll(".screen").forEach(sc => sc.classList.add("hidden"));
+  document.getElementById(screenId).classList.remove("hidden");
+  
+  if (screenId !== 'welcomeScreen' && screenId !== 'profileScreen') {
+    document.getElementById("headerStats").style.display = "flex";
+  }
+}
 
-function updateAvatar() {
+// --- 1 & 2. Profile & Character Creator ---
+const avatar = document.getElementById("avatar");
+
+function updateAvatarDisplay() {
   avatar.style.setProperty("--skin", child.skin);
   avatar.style.setProperty("--hair", child.hair);
   avatar.style.setProperty("--eyes", child.eyes);
   avatar.style.setProperty("--outfit", child.outfit);
-  avatar.classList.toggle("dress", child.clothes === "dress");
 }
 
-document.querySelectorAll(".color-choice").forEach(button => {
-  button.addEventListener("click", () => {
-    const group = button.dataset.group;
-    const color = button.dataset.color;
+document.querySelectorAll(".color-choice").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const group = btn.dataset.group;
+    const color = btn.dataset.color;
     child[group] = color;
-    document.querySelectorAll(`.color-choice[data-group="${group}"]`).forEach(item => item.classList.remove("active"));
-    button.classList.add("active");
-    updateAvatar();
+    document.querySelectorAll(`.color-choice[data-group="${group}"]`).forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    updateAvatarDisplay();
   });
 });
 
-document.querySelectorAll(".outfit-choice").forEach(button => {
-  button.addEventListener("click", () => {
-    child.clothes = button.dataset.outfit;
-    document.querySelectorAll(".outfit-choice").forEach(item => item.classList.remove("active"));
-    button.classList.add("active");
-    updateAvatar();
+document.querySelectorAll(".outfit-choice").forEach(btn => {
+  btn.addEventListener("click", () => {
+    child.clothes = btn.dataset.outfit;
+    document.querySelectorAll(".outfit-choice").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
   });
 });
 
-function renderFinishScreen() {
-  document.getElementById("welcomeName").textContent = `Hello, ${child.name}! 💗`;
-  document.getElementById("totalCoinsDisplay").textContent = child.coins;
-  const finalAvatar = document.getElementById("finalAvatar");
-  finalAvatar.innerHTML = avatar.innerHTML;
-  ["skin", "hair", "eyes", "outfit"].forEach(color => {
-    finalAvatar.style.setProperty(`--${color}`, child[color]);
-  });
-  finalAvatar.classList.toggle("dress", child.clothes === "dress");
-}
+document.getElementById("startAdventureBtn").addEventListener("click", () => {
+  openScreen("profileScreen");
+});
 
-document.getElementById("finishButton").addEventListener("click", () => {
+document.getElementById("profileForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  child.name = document.getElementById("childName").value.trim();
+  child.age = document.getElementById("childAge").value;
+  if (!child.name || !child.age) return;
+
   saveProfile();
-  renderFinishScreen();
-  showScreen(finishScreen);
+  document.getElementById("worldChildName").textContent = child.name;
+  openScreen("worldScreen");
 });
 
-document.getElementById("continueButton").addEventListener("click", () => {
-  document.getElementById("worldName").textContent = child.name;
-  document.getElementById("coins").textContent = child.coins;
-  document.getElementById("streak").textContent = child.streak;
-  showScreen(worldScreen);
-});
 
-function saveProfile() {
-  localStorage.setItem("toothTalesProfile", JSON.stringify(child));
+// --- 4. Education Flow (14 Levels on Jaw) ---
+const educationSteps = [
+  { title: "Step 1: Pick up toothbrush 🪥", desc: "Tap to pick up your brush and get ready.", action: "normal", brushPos: "top: 15px; left: 15px;" },
+  { title: "Step 2: Squeeze toothpaste ✨", desc: "Tap the tube to put toothpaste on the brush.", action: "paste", brushPos: "top: 15px; left: 45%;" },
+  { title: "Step 3: Top teeth — outside 🦷", desc: "Move the brush left and right on upper outer incisors.", action: "normal", brushPos: "top: 25px; left: 30%;" },
+  { title: "Step 4: Top teeth — inside 🌟", desc: "Brush the inner surface of upper teeth.", action: "normal", brushPos: "top: 28px; left: 55%;" },
+  { title: "Step 5: Top teeth — chewing 🍪", desc: "Scrub back and forth on top of upper molars.", action: "normal", brushPos: "top: 20px; left: 70%;" },
+  { title: "Step 6: Bottom teeth — outside 😁", desc: "Move the brush left and right on lower outer teeth.", action: "normal", brushPos: "bottom: 25px; left: 30%;" },
+  { title: "Step 7: Bottom teeth — inside ✨", desc: "Brush the inner side of your lower teeth gently.", action: "normal", brushPos: "bottom: 28px; left: 50%;" },
+  { title: "Step 8: Bottom teeth — chewing 🥞", desc: "Scrub back and forth on lower chewing molars.", action: "normal", brushPos: "bottom: 20px; left: 65%;" },
+  { title: "Step 9: Rescue trapped food 🍎", desc: "Clear away stuck food particles to protect from germs.", action: "normal", brushPos: "top: 45%; left: 45%;" },
+  { title: "Step 10: Brush your tongue 👅", desc: "Clean your tongue gently for super fresh breath.", action: "normal", brushPos: "top: 48%; left: 48%;" },
+  { title: "Step 11: Spit out foam 💧", desc: "Tap to spit out the toothpaste foam safely.", action: "normal", brushPos: "top: 75%; left: 80%;" },
+  { title: "Step 12: Rinse your mouth 🥤", desc: "Take clean water and rinse thoroughly.", action: "normal", brushPos: "top: 45%; left: 15%;" },
+  { title: "Step 13: Wash your brush 🚿", desc: "Clean your toothbrush under running water.", action: "normal", brushPos: "top: 15px; right: 15px;" },
+  { title: "Step 14: Smile! ✨", desc: "Flash a brilliant, glowing clean smile!", action: "normal", brushPos: "top: 45%; left: 45%;" }
+];
+
+let currentEduStep = 0;
+let stepDoneStatus = new Array(educationSteps.length).fill(false);
+
+function startEducationFlow() {
+  currentEduStep = 0;
+  stepDoneStatus.fill(false);
+  openScreen("educationScreen");
+  renderEducationStep();
+  renderEduSidebar();
 }
 
-function restoreProfile() {
-  const saved = localStorage.getItem("toothTalesProfile");
-  if (!saved) return;
-  try {
-    const loaded = JSON.parse(saved);
-    if (loaded.name) {
-      child = loaded;
-      renderFinishScreen();
-      showScreen(finishScreen);
-    }
-  } catch (error) {
-    localStorage.removeItem("toothTalesProfile");
-  }
-}
-
-updateAvatar();
-restoreProfile();
-
-// SNACK & RESCUE LOGIC
-let ttSelectedSnack = "";
-let ttSnackEmoji = "🍎";
-let ttRescuedCount = 0;
-let ttDraggingBrush = false;
-
-function startBrushing(session) {
-  showScreen(mealScreen);
-}
-
-function chooseSnack(snackName, emoji) {
-  ttSelectedSnack = snackName;
-  ttSnackEmoji = emoji;
-  document.getElementById("snackMessage").textContent = `Yummy! You chose ${snackName}! 😋`;
-}
-
-function finishSnack() {
-  if (!ttSelectedSnack) {
-    document.getElementById("snackMessage").textContent = "Choose your snack first! 💗";
-    return;
-  }
-
-  showScreen(rescueScreen);
-  ttRescuedCount = 0;
-
-  // Строго выбранная еда на зубах
-  const crumbs = document.querySelectorAll(".dynamic-crumb");
-  crumbs.forEach(crumb => {
-    crumb.textContent = ttSnackEmoji;
-    crumb.classList.remove("rescued");
-  });
-
-  document.getElementById("rescuedCount").textContent = "0";
-  document.getElementById("rescueSubtitle").textContent = `Oh! Some ${ttSelectedSnack} got stuck between teeth!`;
-  document.getElementById("rescueCry").textContent = `«AAAHH! HELP! Rescue us, or we'll decay the tooth! 😭»`;
-  document.getElementById("rescueMessage").textContent = "Move your toothbrush to save them!";
-  document.getElementById("rescueDone").disabled = true;
-}
-
-const ttBrush = document.getElementById("toothbrush");
-const ttMouth = document.getElementById("rescueMouth");
-
-function moveBrush(event) {
-  const rect = ttMouth.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
-
-  ttBrush.style.left = (x - 28) + "px";
-  ttBrush.style.top = (y - 28) + "px";
-
-  const brushRect = ttBrush.getBoundingClientRect();
-
-  document.querySelectorAll(".dynamic-crumb:not(.rescued)").forEach(crumb => {
-    const foodRect = crumb.getBoundingClientRect();
-    const touching =
-      brushRect.left < foodRect.right &&
-      brushRect.right > foodRect.left &&
-      brushRect.top < foodRect.bottom &&
-      brushRect.bottom > foodRect.top;
-
-    if (touching) {
-      crumb.classList.add("rescued");
-      ttRescuedCount++;
-      document.getElementById("rescuedCount").textContent = ttRescuedCount;
-
-      if (ttRescuedCount === 3) {
-        child.coins += 30;
-        saveProfile();
-        document.getElementById("coins").textContent = child.coins;
-        document.getElementById("rescueCry").textContent = `«Hurrah! We are saved! Thank you, hero! ✨»`;
-        document.getElementById("rescueMessage").textContent = "All food rescued! +30 coins! 🎉";
-        document.getElementById("rescueDone").disabled = false;
-      }
-    }
+function renderEduSidebar() {
+  const list = document.getElementById("eduStepsList");
+  list.innerHTML = "";
+  educationSteps.forEach((st, idx) => {
+    const div = document.createElement("div");
+    div.className = "edu-step-item";
+    if (idx === currentEduStep) div.classList.add("active");
+    if (stepDoneStatus[idx]) div.classList.add("done");
+    div.textContent = `Step ${idx + 1}: ${st.title.split(":")[1] || st.title}`;
+    list.appendChild(div);
   });
 }
 
-ttMouth.addEventListener("pointerdown", function(event) {
-  event.preventDefault();
-  ttDraggingBrush = true;
-  ttMouth.setPointerCapture(event.pointerId);
-  ttBrush.classList.add("active");
-  moveBrush(event);
-});
+function renderEducationStep() {
+  const st = educationSteps[currentEduStep];
+  document.getElementById("eduLevelIndicator").textContent = `Step ${currentEduStep + 1} of 14`;
+  document.getElementById("eduCoinsCount").textContent = child.coins;
+  document.getElementById("eduStepTitle").textContent = st.title;
+  document.getElementById("eduStepDesc").textContent = st.desc;
+  document.getElementById("brushCursor").style.cssText = st.brushPos;
 
-ttMouth.addEventListener("pointermove", function(event) {
-  if (!ttDraggingBrush) return;
-  event.preventDefault();
-  moveBrush(event);
-});
+  const box = document.getElementById("eduInteractiveContainer");
+  box.innerHTML = "";
+  const btn = document.getElementById("completeStepBtn");
+  btn.style.display = "inline-block";
 
-function ttStopBrush() {
-  ttDraggingBrush = false;
-  ttBrush.classList.remove("active");
-}
-
-ttMouth.addEventListener("pointerup", ttStopBrush);
-ttMouth.addEventListener("pointercancel", ttStopBrush);
-
-
-// TOOTH ACADEMY (14 пунктов с монетами по 10 за выполнение)
-function startAcademy() {
-  currentAcademyStep = 0;
-  stepCompleted.fill(false);
-  showScreen(academyScreen);
-  updateAcademyUI();
-}
-
-function updateAcademyUI() {
-  const step = academySteps[currentAcademyStep];
-  document.getElementById("academyTitle").textContent = step.title;
-  document.getElementById("academyDesc").textContent = step.desc;
-  document.getElementById("currentStepNum").textContent = currentAcademyStep + 1;
-  document.getElementById("academyBrushIndicator").style.cssText = step.indicatorPos;
-
-  const interactiveArea = document.getElementById("academyInteractiveArea");
-  interactiveArea.innerHTML = "";
-
-  const actionBtn = document.getElementById("academyActionBtn");
-
-  // Шаг 2: Выдавливание пасты
-  if (step.actionType === "toothpaste") {
-    actionBtn.style.display = "none";
-    const tubeBtn = document.createElement("button");
-    tubeBtn.className = "paste-tube-btn";
-    tubeBtn.textContent = "Squeeze toothpaste 🪥✨";
-    tubeBtn.onclick = () => {
-      tubeBtn.textContent = "Paste added! 💙✨";
-      tubeBtn.style.background = "#82cdb5";
-      setTimeout(() => {
-        performAcademyAction();
-      }, 800);
+  if (st.action === "paste") {
+    btn.style.display = "none";
+    const pasteBtn = document.createElement("button");
+    pasteBtn.className = "magical-btn";
+    pasteBtn.textContent = "Squeeze Toothpaste 🪥✨";
+    pasteBtn.onclick = () => {
+      pasteBtn.textContent = "Toothpaste added! 💙";
+      setTimeout(completeEducationStep, 600);
     };
-    interactiveArea.appendChild(tubeBtn);
-  } else {
-    actionBtn.style.display = "inline-block";
-    actionBtn.textContent = currentAcademyStep === 13 ? "Finish & Smile! (+50 ⭐)" : "Complete step (+10 ⭐)";
+    box.appendChild(pasteBtn);
   }
-  updateDrawerList();
+
+  renderEduSidebar();
 }
 
-function performAcademyAction() {
-  if (!stepCompleted[currentAcademyStep]) {
-    stepCompleted[currentAcademyStep] = true;
-    const reward = currentAcademyStep === 13 ? 50 : 10;
-    child.coins += reward;
+function completeEducationStep() {
+  if (!stepDoneStatus[currentEduStep]) {
+    stepDoneStatus[currentEduStep] = true;
+    child.coins += 10; // 10 монеток за каждый уровень
     saveProfile();
   }
 
-  currentAcademyStep++;
-  if (currentAcademyStep < academySteps.length) {
-    updateAcademyUI();
+  currentEduStep++;
+  if (currentEduStep < educationSteps.length) {
+    renderEducationStep();
   } else {
-    // Обучение завершено успешно
-    document.getElementById("worldName").textContent = child.name;
-    document.getElementById("coins").textContent = child.coins;
-    document.getElementById("streak").textContent = child.streak;
-    document.getElementById("morningLight").textContent = "⭐";
-    document.getElementById("brushMessage").textContent = "Wonderful! You completed Tooth Academy and earned amazing coins! 💖";
-    showScreen(worldScreen);
+    alert("🎉 Fantastic! You completed all 14 educational steps and earned 140 coins!");
+    openScreen("worldScreen");
   }
 }
+
+
+// --- 5. Streaks & 2-Min Timers ---
+let timerInterval = null;
+
+function checkStreakDate() {
+  const today = new Date().toDateString();
+  if (child.lastBrushDate !== today) {
+    // Новый день — сбрасываем статусы чисток, если пропущен день, можно обнулять огонёк при необходимости
+    const lastDate = child.lastBrushDate ? new Date(child.lastBrushDate) : null;
+    const currentDate = new Date(today);
+    if (lastDate) {
+      const diffTime = Math.abs(currentDate - lastDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays > 1) {
+        child.streak = 0; // Сгорает огонёк при пропуске больше 1 дня
+      }
+    }
+  }
+  document.getElementById("streakDaysNum").textContent = child.streak;
+  updateTimerUI();
+}
+
+function updateTimerUI() {
+  document.getElementById("morningStatus").textContent = child.morningDone ? "Status: Done today! ✅" : "Status: Not done today";
+  document.getElementById("nightStatus").textContent = child.nightDone ? "Status: Done today! ✅" : "Status: Not done today";
+}
+
+function startBrushingTimer(session) {
+  if (session === 'morning' && child.morningDone) {
+    alert("You already completed morning brushing today!");
+    return;
+  }
+  if (session === 'night' && child.nightDone) {
+    alert("You already completed night brushing today!");
+    return;
+  }
+
+  let timeLeft = 120; // 2 минуты
+  const displayEl = document.getElementById(session === 'morning' ? 'morningTimerDisplay' : 'nightTimerDisplay');
+  const btnEl = document.getElementById(session === 'morning' ? 'startMorningTimerBtn' : 'startNightTimerBtn');
+  
+  btnEl.disabled = true;
+  if (timerInterval) clearInterval(timerInterval);
+
+  timerInterval = setInterval(() => {
+    let mins = Math.floor(timeLeft / 60);
+    let secs = timeLeft % 60;
+    displayEl.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+    
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      finishBrushingSession(session);
+      btnEl.disabled = false;
+      displayEl.textContent = "02:00";
+    }
+    timeLeft--;
+  }, 1000);
+}
+
+function finishBrushingSession(session) {
+  const today = new Date().toDateString();
+  
+  if (session === 'morning') child.morningDone = true;
+  if (session === 'night') child.nightDone = true;
+
+  // Если обе чистки выполнены за день и дата еще не засчитывалась сегодня
+  if (child.morningDone && child.nightDone && child.lastBrushDate !== today) {
+    child.streak += 1;
+    child.lastBrushDate = today;
+    child.coins += 50; // Бонус за полный день огонька
+
+    // Награды за круглые числа дней (10, 20, 30...)
+    if (child.streak % 10 === 0) {
+      child.coins += 200;
+      alert(`🌟 Amazing milestone! ${child.streak} days streak! You earned a mega bonus of 200 coins!`);
+    } else {
+      alert(`🔥 Day streak increased! Current streak: ${child.streak} days. +50 coins!`);
+    }
+  } else {
+    child.coins += 20; // бонус за одну сессию таймера
+    alert(`Great job on your ${session} brushing! +20 coins.`);
+  }
+
+  saveProfile();
+  updateTimerUI();
+}
+
+
+// --- 6. Jaw Anatomy Puzzles ---
+function answerPuzzle(isCorrect) {
+  const res = document.getElementById("puzzleResult");
+  if (isCorrect) {
+    res.textContent = "Correct! Incisors are sharp front teeth used for biting. +15 coins! ✨";
+    res.style.color = "#2e7d32";
+    child.coins += 15;
+    saveProfile();
+  } else {
+    res.textContent = "Not quite! Try again, think about the front teeth.";
+    res.style.color = "#c62828";
+  }
+}
+
+
+// --- 7. House & Shop ---
+function buyItem(itemName, price) {
+  if (child.coins < price) {
+    alert("Not enough coins! Complete education steps or daily streaks to earn more.");
+    return;
+  }
+  child.coins -= price;
+  child.inventory.push(itemName);
+  saveProfile();
+  updateHouseDisplay();
+  alert(`Successfully bought ${itemName}! Added to your room.`);
+}
+
+function updateHouseDisplay() {
+  const room = document.getElementById("placedDecorations");
+  if (child.inventory.length === 0) {
+    room.textContent = "🛏️ (Empty room - buy items in the shop below!)";
+  } else {
+    room.textContent = "Decorated with: " + child.inventory.join(", ");
+  }
+}
+
+
+// --- Init on load ---
+window.addEventListener("DOMContentLoaded", () => {
+  loadProfile();
+  updateAvatarDisplay();
+  checkStreakDate();
+  updateHouseDisplay();
+  if (child.name) {
+    document.getElementById("worldChildName").textContent = child.name;
+  }
+});
