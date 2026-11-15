@@ -455,12 +455,43 @@ footer {
 }
 
 
+
 .food-crumbs {
-  display: flex;
-  justify-content: center;
-  gap: 25px;
-  margin-top: 15px;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
+
+.crumb {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 50%;
+  font-size: 23px;
+  box-shadow: 0 3px 8px #d9b7c9;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.apple-crumb {
+  left: 20%;
+  top: 112px;
+}
+
+.cookie-crumb {
+  left: 47%;
+  top: 112px;
+}
+
+.bread-crumb {
+  left: 74%;
+  top: 112px;
+}
+
 
 .crumb {
   font-size: 30px;
