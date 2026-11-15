@@ -1,444 +1,662 @@
-// --- Global Game State ---
-let child = {
+
+const $ = id => document.getElementById(id);
+
+const STORE = "toothtales_complete_v1";
+
+const defaults = {
   name: "",
   age: "",
-  skin: "#f5c7a5",
-  hair: "#593b2e",
-  eyes: "#65432d",
-  outfit: "#a88be0",
-  clothes: "shirt",
-  coins: 200, // Стартовый бонус для проверки покупок
+  color: "#b99be8",
+  coins: 120,
   streak: 0,
-  lastBrushDate: "",
-  morningDone: false,
-  nightDone: false,
-  inventory: [],
-  currentWallColor: "#fdfcff"
+  lastCompleted: "",
+  morningDone: "",
+  eveningDone: "",
+  owned: [],
+  placed: []
 };
 
-function loadProfile() {
-  const saved = localStorage.getItem("toothTalesProfile");
-  if (saved) {
-    try {
-      child = JSON.parse(saved);
-      if (typeof child.coins === 'undefined') child.coins = 200;
-    } catch(e) { console.error(e); }
-  }
+let data = { ...defaults };
+
+try {
+  const saved = JSON.parse(localStorage.getItem(STORE) || "null");
+  if (saved) data = { ...defaults, ...saved };
+} catch (e) {}
+
+function save() {
+  localStorage.setItem(STORE, JSON.stringify(data));
+  updateHeader();
 }
+
+function updateHeader() {
+  $("coinCount").textContent = data.coins;
+  $("streakCount").textContent = data.streak;
+}
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(screen => {
+    screen.classList.add("hidden");
+  });
+
+  $(id).classList.remove("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* PROFILE */
 
 function saveProfile() {
-  localStorage.setItem("toothTalesProfile", JSON.stringify(child));
-  updateHeaderStats();
-}
+  const name = $("childName").value.trim();
+  const age = $("childAge").value;
 
-function updateHeaderStats() {
-  document.getElementById("globalCoins").textContent = child.coins;
-  document.getElementById("globalStreak").textContent = child.streak;
-  document.getElementById("shopCoins").textContent = child.coins;
-}
-
-function openScreen(screenId) {
-  document.querySelectorAll(".screen").forEach(sc => sc.classList.add("hidden"));
-  document.getElementById(screenId).classList.remove("hidden");
-  
-  if (screenId !== 'welcomeScreen' && screenId !== 'profileScreen') {
-    document.getElementById("headerStats").style.display = "flex";
-  }
-  if (screenId === 'jawExploreScreen') {
-    document.getElementById("anatomyStudyView").classList.remove("hidden");
-    document.getElementById("anatomyPuzzleView").classList.add("hidden");
-  }
-  if (screenId === 'houseScreen') {
-    switchShopTab('walls');
-  }
-}
-
-// --- Profile & Creator (с переключением шорт и платья) ---
-const avatar = document.getElementById("avatar");
-const avatarBodyEl = document.getElementById("avatarBodyEl");
-const avatarShortsEl = document.getElementById("avatarShortsEl");
-
-function updateAvatarDisplay() {
-  avatar.style.setProperty("--skin", child.skin);
-  avatar.style.setProperty("--hair", child.hair);
-  avatar.style.setProperty("--eyes", child.eyes);
-  avatar.style.setProperty("--outfit", child.outfit);
-
-  if (child.clothes === 'dress') {
-    avatarBodyEl.style.height = "100px";
-    avatarBodyEl.style.borderRadius = "20px 20px 35px 35px";
-    avatarBodyEl.style.clipPath = "polygon(15% 0, 85% 0, 100% 100%, 0 100%)";
-    avatarShortsEl.style.display = "none";
-  } else {
-    avatarBodyEl.style.height = "75px";
-    avatarBodyEl.style.borderRadius = "20px 20px 10px 10px";
-    avatarBodyEl.style.clipPath = "none";
-    avatarShortsEl.style.display = "block";
-  }
-}
-
-document.querySelectorAll(".color-choice").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const group = btn.dataset.group;
-    const color = btn.dataset.color;
-    child[group] = color;
-    document.querySelectorAll(`.color-choice[data-group="${group}"]`).forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    updateAvatarDisplay();
-  });
-});
-
-document.querySelectorAll(".outfit-choice").forEach(btn => {
-  btn.addEventListener("click", () => {
-    child.clothes = btn.dataset.outfit;
-    document.querySelectorAll(".outfit-choice").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    updateAvatarDisplay();
-  });
-});
-
-document.getElementById("startAdventureBtn").addEventListener("click", () => openScreen("profileScreen"));
-
-document.getElementById("profileForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  child.name = document.getElementById("childName").value.trim();
-  child.age = document.getElementById("childAge").value;
-  if (!child.name || !child.age) return;
-
-  saveProfile();
-  document.getElementById("worldChildName").textContent = child.name;
-  openScreen("worldScreen");
-  updateAvatarDisplay();
-});
-
-
-// --- Brushing & Cleaning Flow (с валидацией пасты и воды) ---
-const brushingSteps = [
-  { title: "Step 1: Apply Toothpaste", desc: "Drag the toothpaste onto your toothbrush to apply paste!" },
-  { title: "Step 2: Brush Upper & Lower Teeth", desc: "Use your finger to move the toothbrush all over the teeth." },
-  { title: "Step 3: Rinse with Water", desc: "Drag the water cup to rinse your mouth clean." }
-];
-
-let currentBrushStep = 0;
-let hasPaste = false;
-let hasRinsed = false;
-
-function startEducationFlow() {
-  currentBrushStep = 0;
-  hasPaste = false;
-  hasRinsed = false;
-  openScreen("educationScreen");
-  updateBrushStepUI();
-}
-
-function updateBrushStepUI() {
-  document.getElementById("eduLevelIndicator").textContent = `Step ${currentBrushStep + 1} of ${brushingSteps.length}`;
-  document.getElementById("eduCoinsCount").textContent = child.coins;
-  document.getElementById("eduStepTitle").textContent = brushingSteps[currentBrushStep].title;
-  document.getElementById("eduStepDesc").textContent = brushingSteps[currentBrushStep].desc;
-}
-
-function nextBrushStep() {
-  if (currentBrushStep === 0 && !hasPaste) {
-    alert("Please apply toothpaste first by dragging it to the toothbrush!");
-    return;
-  }
-  if (currentBrushStep === 2 && !hasRinsed) {
-    alert("Please rinse with water first!");
+  if (!name || !age) {
+    alert("Please add a name and age first.");
     return;
   }
 
-  currentBrushStep++;
-  child.coins += 20;
-  saveProfile();
+  data.name = name;
+  data.age = age;
+  data.color = $("avatarColor").value;
 
-  if (currentBrushStep < brushingSteps.length) {
-    updateBrushStepUI();
-  } else {
-    alert("🎉 Brilliant! Brushing complete. You earned 60 coins!");
-    openScreen("worldScreen");
-  }
+  save();
+
+  $("playerName").textContent = name;
+  $("avatarGreeting").textContent = name + "'s smile buddy";
+  $("avatarFace").style.background = data.color;
+
+  showScreen("world");
 }
 
-// Перетаскивание щетки, пасты и воды
-const toothbrushEl = document.getElementById("draggableToothbrush");
-const mouthBoard = document.getElementById("interactiveMouthBoard");
-const tubeEl = document.getElementById("toothpasteTube");
-const waterEl = document.getElementById("waterCup");
+/* SNACK TIME */
 
-let isDragging = false;
-let startX = 0, startY = 0;
+function chooseSnack(name, emoji) {
+  $("eatingAvatar").textContent = "😋";
+  $("eatingAvatar").classList.add("chewing");
 
-toothbrushEl.addEventListener("pointerdown", (e) => {
-  isDragging = true;
-  startX = e.clientX - toothbrushEl.offsetLeft;
-  startY = e.clientY - toothbrushEl.offsetTop;
-  toothbrushEl.setPointerCapture(e.pointerId);
-  e.preventDefault();
-});
+  $("eatingText").textContent =
+    `Munch, munch! ${name} is a tasty choice.`;
 
-toothbrushEl.addEventListener("pointermove", (e) => {
-  if (!isDragging) return;
-  let newX = e.clientX - startX;
-  let newY = e.clientY - startY;
-
-  const tableRect = document.getElementById("brushingTable").getBoundingClientRect();
-  const brushRect = toothbrushEl.getBoundingClientRect();
-
-  if (newX >= 0 && newX <= tableRect.width - brushRect.width) toothbrushEl.style.left = newX + "px";
-  if (newY >= 0 && newY <= tableRect.height - brushRect.height) toothbrushEl.style.top = newY + "px";
-
-  if (currentBrushStep === 0 && !hasPaste) {
-    const tubeRect = tubeEl.getBoundingClientRect();
-    if (Math.abs(brushRect.x - tubeRect.x) < 50 && Math.abs(brushRect.y - tubeRect.y) < 50) {
-      hasPaste = true;
-      toothbrushEl.textContent = "🪥✨";
-      alert("Toothpaste applied to toothbrush! ✨");
-    }
-  }
-
-  if (currentBrushStep === 2 && !hasRinsed) {
-    const waterRect = waterEl.getBoundingClientRect();
-    if (Math.abs(brushRect.x - waterRect.x) < 50 && Math.abs(brushRect.y - waterRect.y) < 50) {
-      hasRinsed = true;
-      alert("Mouth rinsed cleanly with water! 🥤✨");
-    }
-  }
-});
-
-function stopDrag(e) {
-  isDragging = false;
-  if (e.pointerId) { try { toothbrushEl.releasePointerCapture(e.pointerId); } catch(err){} }
+  $("afterSnackBtn").classList.remove("hidden");
+  $("eatingAvatar").dataset.snack = emoji;
 }
-toothbrushEl.addEventListener("pointerup", stopDrag);
-toothbrushEl.addEventListener("pointercancel", stopDrag);
 
+/* BRUSH & RESCUE */
 
-// --- Full Mouth Anatomy Puzzle ---
-function startFullMouthPuzzle() {
-  document.getElementById("anatomyStudyView").classList.add("hidden");
-  document.getElementById("anatomyPuzzleView").classList.remove("hidden");
+let rescued = 0;
+let brushing = false;
 
-  const pool = document.getElementById("puzzlePiecesPool");
-  pool.innerHTML = "";
-  document.getElementById("puzzleFeedback").textContent = "";
+const mouth = $("mouthGame");
+const brush = $("movingBrush");
 
-  const labels = ["Top Lip", "Upper Gums", "Molars", "Canines", "Incisors", "Tongue", "Lower Gums", "Bottom Lip"];
-  const shuffled = [...labels].sort(() => Math.random() - 0.5);
-
-  shuffled.forEach(label => {
-    const p = document.createElement("div");
-    p.className = "puzzle-drag-piece";
-    p.textContent = label;
-    p.draggable = true;
-    p.addEventListener("dragstart", (e) => e.dataTransfer.setData("text/plain", label));
-    pool.appendChild(p);
+function startRescue() {
+  document.querySelectorAll(".food-crumb").forEach((crumb, index) => {
+    crumb.classList.remove("rescued");
+    crumb.textContent = ["🍎", "🍞", "🧀"][index];
   });
 
-  document.querySelectorAll(".puzzle-drop-zone").forEach(zone => {
-    zone.classList.remove("filled");
-    zone.textContent = `Drop ${zone.dataset.target} Here`;
-    zone.addEventListener("dragover", (e) => e.preventDefault());
-    zone.addEventListener("drop", (e) => {
-      e.preventDefault();
-      const draggedLabel = e.dataTransfer.getData("text/plain");
-      if (draggedLabel === zone.dataset.target) {
-        zone.textContent = `✅ ${draggedLabel}`;
-        zone.classList.add("filled");
-        
-        // Проверка победы
-        const allFilled = Array.from(document.querySelectorAll(".puzzle-drop-zone")).every(z => z.classList.contains("filled"));
-        if (allFilled) {
-          child.coins += 50;
-          saveProfile();
-          document.getElementById("puzzleFeedback").textContent = "🎉 Incredible! Full mouth successfully assembled! +50 coins!";
-        }
-      } else {
-        document.getElementById("puzzleFeedback").textContent = "❌ Not quite right here, try another zone!";
-      }
-    });
+  rescued = 0;
+
+  $("rescuedCount").textContent = "0";
+  $("rescueBar").style.width = "0%";
+  $("rescueContinue").disabled = true;
+
+  $("rescueMessage").textContent =
+    "Move your finger over each crumb to rescue it.";
+
+  brush.style.left = "8px";
+  brush.style.top = "8px";
+
+  showScreen("rescue");
+}
+
+function moveBrush(event) {
+  const rect = mouth.getBoundingClientRect();
+
+  const x = Math.max(
+    0,
+    Math.min(rect.width - 45, event.clientX - rect.left - 22)
+  );
+
+  const y = Math.max(
+    0,
+    Math.min(rect.height - 45, event.clientY - rect.top - 22)
+  );
+
+  brush.style.left = x + "px";
+  brush.style.top = y + "px";
+
+  document.querySelectorAll(".food-crumb:not(.rescued)").forEach(crumb => {
+    const crumbRect = crumb.getBoundingClientRect();
+    const brushRect = brush.getBoundingClientRect();
+
+    const hit = !(
+      brushRect.right < crumbRect.left ||
+      brushRect.left > crumbRect.right ||
+      brushRect.bottom < crumbRect.top ||
+      brushRect.top > crumbRect.bottom
+    );
+
+    if (hit) {
+      crumb.classList.add("rescued");
+      rescued++;
+
+      $("rescuedCount").textContent = rescued;
+      $("rescueBar").style.width = (rescued / 3 * 100) + "%";
+    }
   });
-}
 
+  if (rescued === 3) {
+    $("rescueMessage").textContent =
+      "Wonderful! All the snack pieces are rescued!";
 
-// --- Streaks & Timers ---
-let timerInterval = null;
-
-function checkStreakDate() {
-  const today = new Date().toDateString();
-  if (child.lastBrushDate !== today) {
-    const lastDate = child.lastBrushDate ? new Date(child.lastBrushDate) : null;
-    const currentDate = new Date(today);
-    if (lastDate) {
-      const diffTime = Math.abs(currentDate - lastDate);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if (diffDays > 1) child.streak = 0;
-    }
+    $("rescueContinue").disabled = false;
   }
-  document.getElementById("streakDaysNum").textContent = child.streak;
-  updateTimerUI();
 }
 
-function updateTimerUI() {
-  document.getElementById("morningStatus").textContent = child.morningDone ? "Status: Done today! ✅" : "Status: Not done today";
-  document.getElementById("nightStatus").textContent = child.nightDone ? "Status: Done today! ✅" : "Status: Not done today";
+mouth.addEventListener("pointerdown", event => {
+  brushing = true;
+  mouth.setPointerCapture(event.pointerId);
+  moveBrush(event);
+  event.preventDefault();
+});
+
+mouth.addEventListener("pointermove", event => {
+  if (brushing) moveBrush(event);
+});
+
+mouth.addEventListener("pointerup", () => {
+  brushing = false;
+});
+
+mouth.addEventListener("pointercancel", () => {
+  brushing = false;
+});
+
+function finishRescue() {
+  data.coins += 15;
+  save();
+
+  $("eatingAvatar").classList.remove("chewing");
+
+  showScreen("world");
 }
 
-function startBrushingTimer(session) {
-  if (session === 'morning' && child.morningDone) { alert("Already done morning brushing today!"); return; }
-  if (session === 'night' && child.nightDone) { alert("Already done night brushing today!"); return; }
+/* TOOTH ACADEMY */
 
-  let timeLeft = 120;
-  const displayEl = document.getElementById(session === 'morning' ? 'morningTimerDisplay' : 'nightTimerDisplay');
-  const btnEl = document.getElementById(session === 'morning' ? 'startMorningTimerBtn' : 'startNightTimerBtn');
-  
-  btnEl.disabled = true;
-  if (timerInterval) clearInterval(timerInterval);
-
-  timerInterval = setInterval(() => {
-    let mins = Math.floor(timeLeft / 60);
-    let secs = timeLeft % 60;
-    displayEl.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-    
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      finishBrushingSession(session);
-      btnEl.disabled = false;
-      displayEl.textContent = "02:00";
-    }
-    timeLeft--;
-  }, 1000);
-}
-
-function finishBrushingSession(session) {
-  const today = new Date().toDateString();
-  if (session === 'morning') child.morningDone = true;
-  if (session === 'night') child.nightDone = true;
-
-  if (child.morningDone && child.nightDone && child.lastBrushDate !== today) {
-    child.streak += 1;
-    child.lastBrushDate = today;
-    child.coins += 50;
-
-    if (child.streak % 10 === 0) {
-      child.coins += 200;
-      alert(`🌟 Milestone! ${child.streak} days streak! Mega bonus +200 coins!`);
-    } else {
-      alert(`🔥 Streak increased to ${child.streak} days! +50 coins!`);
-    }
-  } else {
-    child.coins += 20;
-    alert(`Great job! +20 coins.`);
-  }
-
-  saveProfile();
-  updateTimerUI();
-}
-
-
-// --- Shop & Room Customization (fully fixed and filled) ---
-const shopItems = {
-  walls: [
-    { id: 'wall_pink', name: 'Pink Wall', price: 30, type: 'wall', color: '#ffecf2' },
-    { id: 'wall_blue', name: 'Blue Sky Wall', price: 30, type: 'wall', color: '#e4f2ff' },
-    { id: 'wall_rainbow', name: 'Rainbow Wallpaper (VIP)', price: 150, type: 'wall', color: 'linear-gradient(135deg, #ffcccb, #ffeb99, #ccffcc, #cce6ff)' }
+const anatomyInfo = {
+  Lips: [
+    "Lips",
+    "Your lips help keep food in your mouth and help you speak and smile."
   ],
-  furniture: [
-    { id: 'sofa', name: 'Cozy Sofa', price: 80, icon: '🛋️' },
-    { id: 'bed', name: 'Cute Bed', price: 90, icon: '🛏️' },
-    { id: 'tv', name: 'Big TV', price: 120, icon: '📺' },
-    { id: 'computer', name: 'Gaming PC', price: 150, icon: '💻' },
-    { id: 'lamp', name: 'Magic Lamp', price: 40, icon: '🏮' },
-    { id: 'kitchen', name: 'Kitchen Unit', price: 200, icon: '🍳' },
-    { id: 'bathroom', name: 'Bath & Sink', price: 180, icon: '🛁' },
-    { id: 'expansion', name: 'Expand Room Space', price: 500, icon: '🏰' }
+  Gums: [
+    "Gums",
+    "Gums are the soft pink tissue that support and protect your teeth."
   ],
-  garden: [
-    { id: 'rose', name: 'Rose Pot', price: 50, icon: '🌹' },
-    { id: 'ficus', name: 'Big Ficus', price: 70, icon: '🪴' },
-    { id: 'painting', name: 'Art Painting', price: 60, icon: '🖼️' },
-    { id: 'garden_area', name: 'Magical Garden', price: 300, icon: '🌳' }
+  Teeth: [
+    "Teeth",
+    "Incisors cut, canines tear, and molars help grind food into smaller pieces."
+  ],
+  Tongue: [
+    "Tongue",
+    "Your tongue moves food around, helps you taste, and helps you speak."
   ]
 };
 
-function switchShopTab(category) {
-  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-  event.target.classList.add("active");
+let selectedPiece = null;
+let placedLabels = new Set();
 
-  const panel = document.getElementById("shopPanelContent");
-  panel.innerHTML = "";
-
-  shopItems[category].forEach(item => {
-    const isOwned = child.inventory.includes(item.id);
-    const card = document.createElement("div");
-    card.className = "shop-card";
-    card.innerHTML = `
-      <p>${item.icon || '🎨'} <b>${item.name}</b><br>🪙 ${item.price}</p>
-      <button onclick="buyShopItem('${item.id}', ${item.price}, '${item.type || category}', '${item.color || item.icon}')" ${isOwned && item.type !== 'wall' ? 'disabled' : ''}>
-        ${isOwned && item.type !== 'wall' ? 'Owned' : 'Buy'}
-      </button>
-    `;
-    panel.appendChild(card);
+document.querySelectorAll(".hotspot").forEach(hotspot => {
+  hotspot.addEventListener("click", () => {
+    showAnatomy(hotspot.dataset.part);
   });
+});
+
+function showAnatomy(part) {
+  const [title, description] = anatomyInfo[part];
+
+  $("anatomyInfo").innerHTML =
+    `<b>${title}</b><p>${description}</p>`;
+
+  if (selectedPiece) {
+    if (selectedPiece === part) {
+      placedLabels.add(part);
+
+      const button = document.querySelector(
+        `.puzzle-piece[data-answer="${part}"]`
+      );
+
+      button.classList.add("placed");
+      button.classList.remove("selected");
+      button.disabled = true;
+
+      $("puzzleFeedback").textContent =
+        `Correct! ${part} is in the right place.`;
+
+      selectedPiece = null;
+
+      document.querySelectorAll(".puzzle-piece").forEach(button => {
+        button.classList.remove("selected");
+      });
+
+      if (placedLabels.size === 4) {
+        $("puzzleFeedback").textContent =
+          "Amazing! You completed the mouth puzzle! +20 coins";
+
+        data.coins += 20;
+        save();
+      }
+    } else {
+      $("puzzleFeedback").textContent =
+        "Not quite. Try another numbered area.";
+    }
+  }
 }
 
-function buyShopItem(id, price, category, value) {
-  if (child.coins < price) {
-    alert("Not enough coins! Earn more through brushing and daily streaks.");
+document.querySelectorAll(".puzzle-piece").forEach(button => {
+  button.addEventListener("click", () => {
+    if (button.disabled) return;
+
+    selectedPiece = button.dataset.answer;
+
+    document.querySelectorAll(".puzzle-piece").forEach(item => {
+      item.classList.toggle("selected", item === button);
+    });
+
+    $("puzzleFeedback").textContent =
+      `Now tap the ${selectedPiece.toLowerCase()} area in the illustration.`;
+  });
+});
+
+/* MY ROOM */
+
+const catalog = {
+  furniture: [
+    { id: "bed", name: "Cloud bed", icon: "🛏️", price: 35 },
+    { id: "sofa", name: "Cozy sofa", icon: "🛋️", price: 30 },
+    { id: "desk", name: "Study desk", icon: "🪑", price: 25 },
+    { id: "lamp", name: "Moon lamp", icon: "💡", price: 15 },
+    { id: "bookcase", name: "Bookcase", icon: "📚", price: 25 },
+    { id: "rug", name: "Soft rug", icon: "🟣", price: 20 }
+  ],
+
+  decor: [
+    { id: "plant", name: "Little plant", icon: "🪴", price: 12 },
+    { id: "picture", name: "Wall art", icon: "🖼️", price: 18 },
+    { id: "teddy", name: "Teddy bear", icon: "🧸", price: 20 },
+    { id: "star", name: "Star cushion", icon: "⭐", price: 10 },
+    { id: "clock", name: "Cute clock", icon: "🕒", price: 14 }
+  ],
+
+  wall: [
+    {
+      id: "wallpink",
+      name: "Blush walls",
+      icon: "🌸",
+      price: 20,
+      color: "#f4dfe9"
+    },
+    {
+      id: "wallmint",
+      name: "Mint walls",
+      icon: "🌿",
+      price: 20,
+      color: "#e0f0e8"
+    },
+    {
+      id: "wallsky",
+      name: "Sky walls",
+      icon: "☁️",
+      price: 20,
+      color: "#e2edf7"
+    },
+    {
+      id: "walllilac",
+      name: "Lilac walls",
+      icon: "💜",
+      price: 20,
+      color: "#ece4f5"
+    }
+  ]
+};
+
+let activeShop = "furniture";
+
+function openRoom() {
+  showScreen("room");
+  renderRoom();
+
+  showShop(
+    "furniture",
+    document.querySelector(".tab")
+  );
+}
+
+function showShop(category, button) {
+  activeShop = category;
+
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.classList.remove("active");
+  });
+
+  if (button) button.classList.add("active");
+
+  const grid = $("shopGrid");
+  grid.innerHTML = "";
+
+  if (category === "inventory") {
+    const ownedItems = catalog.furniture
+      .concat(catalog.decor)
+      .filter(item => data.owned.includes(item.id));
+
+    if (!ownedItems.length) {
+      grid.innerHTML = "<p>You haven't bought any furniture yet.</p>";
+    }
+
+    ownedItems.forEach(item => {
+      grid.appendChild(shopCard(item, true));
+    });
+
     return;
   }
 
-  child.coins -= price;
-  if (!child.inventory.includes(id) || category === 'walls') {
-    child.inventory.push(id);
-  }
-
-  if (category === 'walls') {
-    child.currentWallColor = value;
-  }
-
-  saveProfile();
-  updateRoomDisplay();
-  switchShopTab(category);
-  alert(`Successfully bought!`);
+  (catalog[category] || []).forEach(item => {
+    grid.appendChild(shopCard(item, false));
+  });
 }
 
-function updateRoomDisplay() {
-  const room = document.getElementById("myRoom");
-  room.style.background = child.currentWallColor;
+function shopCard(item, inventory) {
+  const card = document.createElement("div");
+  card.className = "shop-item";
 
-  const itemsBox = document.getElementById("roomPreviewItems");
-  if (child.inventory.length === 0) {
-    itemsBox.textContent = "🛏️ (Empty room. Buy furniture in shop!)";
+  const owned = data.owned.includes(item.id);
+
+  card.innerHTML = `
+    <div class="item-icon">${item.icon}</div>
+    <b>${item.name}</b>
+    <small>${inventory ? "Ready to place" : `🪙 ${item.price}`}</small>
+  `;
+
+  const button = document.createElement("button");
+
+  button.textContent = inventory
+    ? "Place in room"
+    : owned
+      ? "Owned"
+      : "Buy";
+
+  button.disabled = !inventory && owned;
+
+  button.addEventListener("click", () => {
+    if (inventory) {
+      placeItem(item.id);
+    } else {
+      buyItem(item);
+    }
+  });
+
+  card.appendChild(button);
+
+  return card;
+}
+
+function buyItem(item) {
+  if (data.owned.includes(item.id)) return;
+
+  if (data.coins < item.price) {
+    $("shopMessage").textContent =
+      "Not enough coins yet. Complete an adventure to earn more.";
+
+    return;
+  }
+
+  data.coins -= item.price;
+  data.owned.push(item.id);
+
+  if (item.color) data.wallColor = item.color;
+
+  save();
+
+  $("shopMessage").textContent =
+    `You bought ${item.name}! Open My items to place it.`;
+
+  showShop(
+    activeShop,
+    document.querySelector(".tab.active")
+  );
+}
+
+function placeItem(id) {
+  if (!data.owned.includes(id)) return;
+
+  const item = [...catalog.furniture, ...catalog.decor]
+    .find(item => item.id === id);
+
+  if (!item) return;
+
+  data.placed.push({
+    id,
+    x: 25 + Math.random() * 50,
+    y: 45 + Math.random() * 35
+  });
+
+  save();
+  renderRoom();
+
+  $("shopMessage").textContent =
+    `${item.name} placed! Drag it to move it.`;
+}
+
+function renderRoom() {
+  if (data.wallColor) {
+    $("roomStage").style.background =
+      `linear-gradient(${data.wallColor} 0 72%,#d7c1b3 72% 100%)`;
+  }
+
+  const container = $("roomItems");
+  container.innerHTML = "";
+
+  data.placed.forEach(placed => {
+    const item = [...catalog.furniture, ...catalog.decor]
+      .find(item => item.id === placed.id);
+
+    if (!item) return;
+
+    const element = document.createElement("div");
+
+    element.className = "placed-item";
+    element.textContent = item.icon;
+    element.style.left = placed.x + "%";
+    element.style.top = placed.y + "%";
+    element.title = "Drag to move";
+
+    element.addEventListener("pointerdown", event => {
+      event.preventDefault();
+
+      element.setPointerCapture(event.pointerId);
+
+      const rect = $("roomStage").getBoundingClientRect();
+
+      const move = moveEvent => {
+        placed.x = Math.max(
+          5,
+          Math.min(95, (moveEvent.clientX - rect.left) / rect.width * 100)
+        );
+
+        placed.y = Math.max(
+          10,
+          Math.min(90, (moveEvent.clientY - rect.top) / rect.height * 100)
+        );
+
+        element.style.left = placed.x + "%";
+        element.style.top = placed.y + "%";
+      };
+
+      const up = () => {
+        element.removeEventListener("pointermove", move);
+        element.removeEventListener("pointerup", up);
+        save();
+      };
+
+      element.addEventListener("pointermove", move);
+      element.addEventListener("pointerup", up);
+    });
+
+    container.appendChild(element);
+  });
+}
+
+/* DAILY STREAKS AND TIMERS */
+
+let timer = null;
+let activeSession = null;
+let remaining = 120;
+
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function openStreaks() {
+  showScreen("streaks");
+  updateStreakUI();
+}
+
+function updateStreakUI() {
+  $("streakDays").textContent = data.streak;
+
+  const today = todayKey();
+
+  $("morningState").textContent =
+    data.morningDone === today
+      ? "Completed today ✓"
+      : "Ready when you are";
+
+  $("eveningState").textContent =
+    data.eveningDone === today
+      ? "Completed today ✓"
+      : "Ready when you are";
+
+  $("morningStart").disabled =
+    data.morningDone === today || !!activeSession;
+
+  $("eveningStart").disabled =
+    data.eveningDone === today || !!activeSession;
+}
+
+function startTimer(session) {
+  if (activeSession) {
+    $("timerMessage").textContent =
+      "A timer is already running. Finish or cancel it first.";
+
+    return;
+  }
+
+  const today = todayKey();
+
+  if (
+    (session === "morning" ? data.morningDone : data.eveningDone) === today
+  ) {
+    return;
+  }
+
+  activeSession = session;
+  remaining = 120;
+
+  $("timerMessage").textContent =
+    `${session === "morning" ? "Morning" : "Evening"} brushing is in progress. Keep going!`;
+
+  $("stopTimer").classList.remove("hidden");
+
+  updateTimerDisplay();
+  updateStreakUI();
+
+  timer = setInterval(() => {
+    remaining--;
+    updateTimerDisplay();
+
+    if (remaining <= 0) {
+      completeTimer();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const minutes = String(Math.floor(remaining / 60)).padStart(2, "0");
+  const seconds = String(remaining % 60).padStart(2, "0");
+
+  $(activeSession === "morning" ? "morningTime" : "eveningTime")
+    .textContent = `${minutes}:${seconds}`;
+}
+
+function stopTimer() {
+  if (timer) clearInterval(timer);
+
+  timer = null;
+
+  const previous = activeSession;
+  activeSession = null;
+
+  if (previous) {
+    $(previous === "morning" ? "morningTime" : "eveningTime")
+      .textContent = "02:00";
+  }
+
+  $("stopTimer").classList.add("hidden");
+
+  $("timerMessage").textContent =
+    "Timer cancelled. You can start again when ready.";
+
+  updateStreakUI();
+}
+
+function completeTimer() {
+  clearInterval(timer);
+  timer = null;
+
+  const today = todayKey();
+
+  if (activeSession === "morning") {
+    data.morningDone = today;
   } else {
-    itemsBox.innerHTML = child.inventory.map(i => {
-      let icon = "✨";
-      if (i === 'sofa') icon = "🛋️";
-      if (i === 'bed') icon = "🛏️";
-      if (i === 'tv') icon = "📺";
-      if (i === 'computer') icon = "💻";
-      if (i === 'lamp') icon = "🏮";
-      if (i === 'kitchen') icon = "🍳";
-      if (i === 'bathroom') icon = "🛁";
-      if (i === 'expansion') icon = "🏰";
-      if (i === 'rose') icon = "🌹";
-      if (i === 'ficus') icon = "🪴";
-      if (i === 'painting') icon = "🖼️";
-      if (i === 'garden_area') icon = "🌳";
-      return `<span style="font-size:32px; margin: 6px; display:inline-block;">${icon}</span>`;
-    }).join(" ");
+    data.eveningDone = today;
   }
+
+  const finished = activeSession;
+  activeSession = null;
+
+  const both =
+    data.morningDone === today &&
+    data.eveningDone === today;
+
+  if (both && data.lastCompleted !== today) {
+    data.streak++;
+    data.lastCompleted = today;
+    data.coins += 30;
+  } else {
+    data.coins += 10;
+  }
+
+  save();
+
+  $(finished === "morning" ? "morningTime" : "eveningTime")
+    .textContent = "02:00";
+
+  $("stopTimer").classList.add("hidden");
+
+  $("timerMessage").textContent =
+    "Wonderful work! Your brushing session is complete.";
+
+  updateStreakUI();
 }
 
+/* INITIALIZE */
 
-// --- Init ---
-window.addEventListener("DOMContentLoaded", () => {
-  loadProfile();
-  updateAvatarDisplay();
-  checkStreakDate();
-  updateRoomDisplay();
-  if (child.name) {
-    document.getElementById("worldChildName").textContent = child.name;
-    updateAvatarDisplay();
-  }
-});
+updateHeader();
+
+if (data.name) {
+  $("playerName").textContent = data.name;
+  $("avatarGreeting").textContent = data.name + "'s smile buddy";
+  $("avatarFace").style.background = data.color;
+
+  showScreen("world");
+} else {
+  showScreen("home");
+}
