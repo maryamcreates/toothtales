@@ -494,12 +494,7 @@ footer {
 
 
 .crumb {
-  font-size: 30px;
-  padding: 8px;
-  background: white;
-  border-radius: 50%;
   touch-action: none;
-  cursor: grab;
   user-select: none;
 }
 
