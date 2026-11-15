@@ -15,7 +15,6 @@ let child = {
   inventory: []
 };
 
-// Загрузка сохраненного профиля из localStorage
 function loadProfile() {
   const saved = localStorage.getItem("toothTalesProfile");
   if (saved) {
@@ -38,7 +37,6 @@ function updateHeaderStats() {
   document.getElementById("shopCoins").textContent = child.coins;
 }
 
-// Управление экранами
 function openScreen(screenId) {
   document.querySelectorAll(".screen").forEach(sc => sc.classList.add("hidden"));
   document.getElementById(screenId).classList.remove("hidden");
@@ -48,7 +46,7 @@ function openScreen(screenId) {
   }
 }
 
-// --- 1 & 2. Profile & Character Creator ---
+// --- Profile & Character Creator ---
 const avatar = document.getElementById("avatar");
 
 function updateAvatarDisplay() {
@@ -93,22 +91,22 @@ document.getElementById("profileForm").addEventListener("submit", (e) => {
 });
 
 
-// --- 4. Education Flow (14 Levels on Jaw) ---
+// --- 14 Levels Education Flow with Finger-Draggable Toothbrush ---
 const educationSteps = [
-  { title: "Step 1: Pick up toothbrush 🪥", desc: "Tap to pick up your brush and get ready.", action: "normal", brushPos: "top: 15px; left: 15px;" },
-  { title: "Step 2: Squeeze toothpaste ✨", desc: "Tap the tube to put toothpaste on the brush.", action: "paste", brushPos: "top: 15px; left: 45%;" },
-  { title: "Step 3: Top teeth — outside 🦷", desc: "Move the brush left and right on upper outer incisors.", action: "normal", brushPos: "top: 25px; left: 30%;" },
-  { title: "Step 4: Top teeth — inside 🌟", desc: "Brush the inner surface of upper teeth.", action: "normal", brushPos: "top: 28px; left: 55%;" },
-  { title: "Step 5: Top teeth — chewing 🍪", desc: "Scrub back and forth on top of upper molars.", action: "normal", brushPos: "top: 20px; left: 70%;" },
-  { title: "Step 6: Bottom teeth — outside 😁", desc: "Move the brush left and right on lower outer teeth.", action: "normal", brushPos: "bottom: 25px; left: 30%;" },
-  { title: "Step 7: Bottom teeth — inside ✨", desc: "Brush the inner side of your lower teeth gently.", action: "normal", brushPos: "bottom: 28px; left: 50%;" },
-  { title: "Step 8: Bottom teeth — chewing 🥞", desc: "Scrub back and forth on lower chewing molars.", action: "normal", brushPos: "bottom: 20px; left: 65%;" },
-  { title: "Step 9: Rescue trapped food 🍎", desc: "Clear away stuck food particles to protect from germs.", action: "normal", brushPos: "top: 45%; left: 45%;" },
-  { title: "Step 10: Brush your tongue 👅", desc: "Clean your tongue gently for super fresh breath.", action: "normal", brushPos: "top: 48%; left: 48%;" },
-  { title: "Step 11: Spit out foam 💧", desc: "Tap to spit out the toothpaste foam safely.", action: "normal", brushPos: "top: 75%; left: 80%;" },
-  { title: "Step 12: Rinse your mouth 🥤", desc: "Take clean water and rinse thoroughly.", action: "normal", brushPos: "top: 45%; left: 15%;" },
-  { title: "Step 13: Wash your brush 🚿", desc: "Clean your toothbrush under running water.", action: "normal", brushPos: "top: 15px; right: 15px;" },
-  { title: "Step 14: Smile! ✨", desc: "Flash a brilliant, glowing clean smile!", action: "normal", brushPos: "top: 45%; left: 45%;" }
+  { title: "Step 1: Pick up toothbrush 🪥", desc: "Drag the toothbrush to pick it up and hold it.", action: "normal" },
+  { title: "Step 2: Squeeze toothpaste ✨", desc: "Tap the tube to put magical fluoride paste on your brush.", action: "paste" },
+  { title: "Step 3: Top teeth — outside 🦷", desc: "Move your brush left and right on the upper outer teeth.", action: "normal" },
+  { title: "Step 4: Top teeth — inside 🌟", desc: "Carefully move the brush on the inner side of upper teeth.", action: "normal" },
+  { title: "Step 5: Top teeth — chewing surface 🍪", desc: "Scrub back and forth right on top of upper molars.", action: "normal" },
+  { title: "Step 6: Bottom teeth — outside 😁", desc: "Move your brush left and right on lower outer teeth.", action: "normal" },
+  { title: "Step 7: Bottom teeth — inside ✨", desc: "Gently move the brush on the inner side of lower teeth.", action: "normal" },
+  { title: "Step 8: Bottom teeth — chewing surface 🥞", desc: "Scrub back and forth on lower chewing molars.", action: "normal" },
+  { title: "Step 9: Rescue trapped food 🍎", desc: "Brush over food particles stuck between teeth to clear them.", action: "normal" },
+  { title: "Step 10: Brush your tongue 👅", desc: "Move the brush gently across your tongue for fresh breath.", action: "normal" },
+  { title: "Step 11: Spit out foam 💧", desc: "Tap the sink button to spit out the foam safely.", action: "spit" },
+  { title: "Step 12: Rinse your mouth 🥤", desc: "Tap the cup of water to rinse your mouth thoroughly.", action: "rinse" },
+  { title: "Step 13: Wash your brush 🚿", desc: "Move your brush under running water to clean it.", action: "normal" },
+  { title: "Step 14: Smile! ✨", desc: "Flash a brilliant, glowing clean smile with healthy teeth!", action: "normal" }
 ];
 
 let currentEduStep = 0;
@@ -141,23 +139,47 @@ function renderEducationStep() {
   document.getElementById("eduCoinsCount").textContent = child.coins;
   document.getElementById("eduStepTitle").textContent = st.title;
   document.getElementById("eduStepDesc").textContent = st.desc;
-  document.getElementById("brushCursor").style.cssText = st.brushPos;
 
   const box = document.getElementById("eduInteractiveContainer");
   box.innerHTML = "";
   const btn = document.getElementById("completeStepBtn");
   btn.style.display = "inline-block";
 
+  // Интерактив для выдавливания пасты (Шаг 2)
   if (st.action === "paste") {
     btn.style.display = "none";
     const pasteBtn = document.createElement("button");
     pasteBtn.className = "magical-btn";
-    pasteBtn.textContent = "Squeeze Toothpaste 🪥✨";
+    pasteBtn.textContent = "Squeeze Toothpaste Tube 🪥✨";
     pasteBtn.onclick = () => {
-      pasteBtn.textContent = "Toothpaste added! 💙";
+      pasteBtn.textContent = "Toothpaste squeezed successfully! 💙";
       setTimeout(completeEducationStep, 600);
     };
     box.appendChild(pasteBtn);
+  } 
+  // Интерактив для сплевывания (Шаг 11)
+  else if (st.action === "spit") {
+    btn.style.display = "none";
+    const spitBtn = document.createElement("button");
+    spitBtn.className = "magical-btn";
+    spitBtn.textContent = "Tap Sink to Spit 💧";
+    spitBtn.onclick = () => {
+      spitBtn.textContent = "Clean foam spat out! ✨";
+      setTimeout(completeEducationStep, 600);
+    };
+    box.appendChild(spitBtn);
+  }
+  // Интерактив для полоскания (Шаг 12)
+  else if (st.action === "rinse") {
+    btn.style.display = "none";
+    const rinseBtn = document.createElement("button");
+    rinseBtn.className = "magical-btn";
+    rinseBtn.textContent = "Drink Water & Rinse 🥤";
+    rinseBtn.onclick = () => {
+      rinseBtn.textContent = "Mouth rinsed and fresh! ✨";
+      setTimeout(completeEducationStep, 600);
+    };
+    box.appendChild(rinseBtn);
   }
 
   renderEduSidebar();
@@ -179,21 +201,62 @@ function completeEducationStep() {
   }
 }
 
+// Настройка перетаскивания зубной щетки пальцем/мышкой по челюсти
+const toothbrushEl = document.getElementById("draggableToothbrush");
+const mouthBoard = document.getElementById("interactiveMouthBoard");
 
-// --- 5. Streaks & 2-Min Timers ---
+let isDragging = false;
+let startX = 0, startY = 0;
+
+toothbrushEl.addEventListener("pointerdown", (e) => {
+  isDragging = true;
+  startX = e.clientX - toothbrushEl.offsetLeft;
+  startY = e.clientY - toothbrushEl.offsetTop;
+  toothbrushEl.setPointerCapture(e.pointerId);
+  e.preventDefault();
+});
+
+toothbrushEl.addEventListener("pointermove", (e) => {
+  if (!isDragging) return;
+  let newX = e.clientX - startX;
+  let newY = e.clientY - startY;
+
+  // Ограничиваем движение внутри челюсти
+  const boardRect = mouthBoard.getBoundingClientRect();
+  const brushRect = toothbrushEl.getBoundingClientRect();
+
+  if (newX >= 0 && newX <= boardRect.width - brushRect.width) {
+    toothbrushEl.style.left = newX + "px";
+  }
+  if (newY >= 0 && newY <= boardRect.height - brushRect.height) {
+    toothbrushEl.style.top = newY + "px";
+  }
+});
+
+function stopDrag(e) {
+  isDragging = false;
+  if (e.pointerId) {
+    try { toothbrushEl.releasePointerCapture(e.pointerId); } catch(err){}
+  }
+}
+
+toothbrushEl.addEventListener("pointerup", stopDrag);
+toothbrushEl.addEventListener("pointercancel", stopDrag);
+
+
+// --- Streaks & 2-Min Timers ---
 let timerInterval = null;
 
 function checkStreakDate() {
   const today = new Date().toDateString();
   if (child.lastBrushDate !== today) {
-    // Новый день — сбрасываем статусы чисток, если пропущен день, можно обнулять огонёк при необходимости
     const lastDate = child.lastBrushDate ? new Date(child.lastBrushDate) : null;
     const currentDate = new Date(today);
     if (lastDate) {
       const diffTime = Math.abs(currentDate - lastDate);
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       if (diffDays > 1) {
-        child.streak = 0; // Сгорает огонёк при пропуске больше 1 дня
+        child.streak = 0;
       }
     }
   }
@@ -216,7 +279,7 @@ function startBrushingTimer(session) {
     return;
   }
 
-  let timeLeft = 120; // 2 минуты
+  let timeLeft = 120;
   const displayEl = document.getElementById(session === 'morning' ? 'morningTimerDisplay' : 'nightTimerDisplay');
   const btnEl = document.getElementById(session === 'morning' ? 'startMorningTimerBtn' : 'startNightTimerBtn');
   
@@ -244,13 +307,11 @@ function finishBrushingSession(session) {
   if (session === 'morning') child.morningDone = true;
   if (session === 'night') child.nightDone = true;
 
-  // Если обе чистки выполнены за день и дата еще не засчитывалась сегодня
   if (child.morningDone && child.nightDone && child.lastBrushDate !== today) {
     child.streak += 1;
     child.lastBrushDate = today;
-    child.coins += 50; // Бонус за полный день огонька
+    child.coins += 50;
 
-    // Награды за круглые числа дней (10, 20, 30...)
     if (child.streak % 10 === 0) {
       child.coins += 200;
       alert(`🌟 Amazing milestone! ${child.streak} days streak! You earned a mega bonus of 200 coins!`);
@@ -258,7 +319,7 @@ function finishBrushingSession(session) {
       alert(`🔥 Day streak increased! Current streak: ${child.streak} days. +50 coins!`);
     }
   } else {
-    child.coins += 20; // бонус за одну сессию таймера
+    child.coins += 20;
     alert(`Great job on your ${session} brushing! +20 coins.`);
   }
 
@@ -267,7 +328,7 @@ function finishBrushingSession(session) {
 }
 
 
-// --- 6. Jaw Anatomy Puzzles ---
+// --- Jaw Anatomy Puzzles ---
 function answerPuzzle(isCorrect) {
   const res = document.getElementById("puzzleResult");
   if (isCorrect) {
@@ -282,7 +343,7 @@ function answerPuzzle(isCorrect) {
 }
 
 
-// --- 7. House & Shop ---
+// --- House & Shop ---
 function buyItem(itemName, price) {
   if (child.coins < price) {
     alert("Not enough coins! Complete education steps or daily streaks to earn more.");
