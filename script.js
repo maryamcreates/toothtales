@@ -1,804 +1,1098 @@
 
-/* =====================================
-   TOOTHTALES — MAIN GAME SCRIPT
-===================================== */
+/* =========================================
+   TOOTHTALES
+   Main game logic
+========================================= */
+
+const STORAGE_KEY = "toothtales_save_v3";
+
+const DEFAULT_DATA = {
+  name: "Friend",
+  age: "5",
+  avatar: "🧒",
+  coins: 100,
+
+  inventory: [],
+
+  unlockedRooms: ["Bedroom"],
+  currentRoom: "Bedroom",
+
+  roomItems: {
+    Bedroom: []
+  },
+
+  wallColors: {
+    Bedroom: "#f4e8ff"
+  },
+
+  morningDone: "",
+  eveningDone: "",
+  streak: 0,
+  lastStreakDate: ""
+};
+
+let data = loadData();
+
+let selectedAvatar = "🧒";
+let selectedSnack = null;
+let selectedRoomItem = null;
+let currentShopCategory = "furniture";
+let rescueCount = 0;
+let rescueCompleted = false;
+let rescuePointerId = null;
+let activeTimer = null;
+let timerInterval = null;
+let timerSeconds = 120;
 
 const $ = (id) => document.getElementById(id);
 
-const STORAGE_KEY = "toothtales_save_v2";
+function loadData() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
 
-const defaultData = {
-  name: "",
-  age: "",
-  color: "#f5b6c8",
-  coins: 100,
-  inventory: [],
-  unlockedRooms: ["Спальня"],
-  currentRoom: "Спальня",
-  roomItems: {},
-  wallColors: {
-    "Спальня": "#f6dfe6"
-  },
-  morningDone: "",
-  eveningDone: "",
-  streak: 0
-};
+    if (!saved || typeof saved !== "object") {
+      return structuredClone(DEFAULT_DATA);
+    }
 
-let data;
+    const result = {
+      ...structuredClone(DEFAULT_DATA),
+      ...saved
+    };
 
-try {
-  data = {
-    ...defaultData,
-    ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}")
-  };
-} catch {
-  data = { ...defaultData };
+    if (!Array.isArray(result.inventory)) result.inventory = [];
+    if (!Array.isArray(result.unlockedRooms)) result.unlockedRooms = ["Bedroom"];
+    if (!result.unlockedRooms.includes("Bedroom")) {
+      result.unlockedRooms.unshift("Bedroom");
+    }
+
+    if (!result.roomItems || typeof result.roomItems !== "object") {
+      result.roomItems = { Bedroom: [] };
+    }
+
+    if (!result.wallColors || typeof result.wallColors !== "object") {
+      result.wallColors = { Bedroom: "#f4e8ff" };
+    }
+
+    if (!result.roomItems.Bedroom) {
+      result.roomItems.Bedroom = [];
+    }
+
+    if (!result.unlockedRooms.includes(result.currentRoom)) {
+      result.currentRoom = "Bedroom";
+    }
+
+    return result;
+  } catch (error) {
+    return structuredClone(DEFAULT_DATA);
+  }
 }
 
 function saveData() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  updateWallet();
+  updateCoins();
 }
 
-function updateWallet() {
-  $("coinCount").textContent = data.coins;
+function updateCoins() {
+  const coinCount = $("coinCount");
+  const shopCoins = $("shopCoins");
+
+  if (coinCount) coinCount.textContent = data.coins;
+  if (shopCoins) shopCoins.textContent = data.coins;
 }
 
-function addCoins(amount) {
-  data.coins += amount;
-  saveData();
-}
+/* =========================================
+   SCREEN NAVIGATION
+========================================= */
 
-/* =====================================
-   NAVIGATION AND PROFILE
-===================================== */
-
-function showScreen(name) {
-  document.querySelectorAll(".screen").forEach(screen => {
+function showScreen(screenId) {
+  document.querySelectorAll(".screen").forEach((screen) => {
     screen.classList.add("hidden");
   });
 
-  const target = $(name);
+  const target = $(screenId);
 
   if (target) {
     target.classList.remove("hidden");
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
+
+  if (screenId === "rescue") {
+    startRescue();
+  }
+
+  if (screenId === "room") {
+    renderRoomSelector();
+    renderRoom();
+    renderShop();
+    renderInventory();
+  }
+
+  if (screenId === "streaks") {
+    updateRoutineDisplay();
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function saveProfile() {
-  const name = $("childName").value.trim();
-  const age = $("childAge").value;
+/* =========================================
+   PROFILE
+========================================= */
 
-  if (!name) {
-    alert("Напиши своё имя! 💗");
-    return;
-  }
+function loadProfileIntoPage() {
+  $("childName").value = data.name === "Friend" ? "" : data.name;
+  $("childAge").value = data.age;
+  selectedAvatar = data.avatar;
 
-  data.name = name;
-  data.age = age;
-  data.color = $("avatarColor").value;
+  document.querySelectorAll(".avatar-choice").forEach((button) => {
+    button.classList.toggle(
+      "selected",
+      button.dataset.avatar === selectedAvatar
+    );
+  });
+
+  updateWorldProfile();
+}
+
+function updateWorldProfile() {
+  $("playerName").textContent = data.name;
+  $("welcomeAvatar").textContent = data.avatar;
+}
+
+document.querySelectorAll(".avatar-choice").forEach((button) => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".avatar-choice").forEach((item) => {
+      item.classList.remove("selected");
+    });
+
+    button.classList.add("selected");
+    selectedAvatar = button.dataset.avatar;
+  });
+});
+
+$("startAdventure").addEventListener("click", () => {
+  const enteredName = $("childName").value.trim();
+
+  data.name = enteredName || "Friend";
+  data.age = $("childAge").value;
+  data.avatar = selectedAvatar;
 
   saveData();
-  updateProfile();
+  updateWorldProfile();
   showScreen("world");
-}
+});
 
-function updateProfile() {
-  if (data.name) {
-    $("playerName").textContent = data.name;
-  }
+/* =========================================
+   SNACK TIME
+========================================= */
 
-  $("coinCount").textContent = data.coins;
-  $("avatarFace").style.background = data.color;
-}
+document.querySelectorAll(".snack-choice").forEach((button) => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".snack-choice").forEach((item) => {
+      item.classList.remove("selected");
+    });
 
-function loadProfile() {
-  if (data.name) {
-    $("childName").value = data.name;
-    $("childAge").value = data.age || "";
-    $("avatarColor").value = data.color;
-    updateProfile();
-    showScreen("world");
-  }
-}
+    button.classList.add("selected");
 
-/* =====================================
-   SNACK AND FOOD RESCUE GAME
-===================================== */
+    selectedSnack = {
+      emoji: button.dataset.snack,
+      name: button.dataset.name
+    };
 
-let selectedSnack = {
-  name: "Яблоко",
-  emoji: "🍎"
-};
+    $("eatingAvatar").textContent = selectedSnack.emoji;
+    $("eatingText").textContent = "Yummy " + selectedSnack.name + "!";
 
-function chooseSnack(name, emoji) {
-  selectedSnack = { name, emoji };
+    $("snackResult").classList.remove("hidden");
+  });
+});
 
-  $("eatingAvatar").textContent = "🧚🏻‍♀️ 😋";
-  $("eatingText").textContent = "Ням-ням! Ты съел(а): " + name;
-  $("afterSnackBtn").classList.remove("hidden");
-}
-
-let rescued = 0;
-let brushMoving = false;
+/* =========================================
+   RESCUE THE TEETH GAME
+========================================= */
 
 function startRescue() {
-  showScreen("rescue");
-
-  rescued = 0;
+  rescueCount = 0;
+  rescueCompleted = false;
+  rescuePointerId = null;
 
   $("rescuedCount").textContent = "0";
   $("rescueBar").style.width = "0%";
+
   $("rescueMessage").textContent =
-    "Передвигай щётку пальцем и собирай кусочки еды!";
+    "Touch and drag the toothbrush to every piece of food!";
+
   $("rescueContinue").classList.add("hidden");
 
-  const crumbs = document.querySelectorAll(".crumb");
+  const brush = $("movingBrush");
+  brush.style.left = "50%";
+  brush.style.top = "225px";
+  brush.style.transform = "translate(-50%, -50%)";
 
-  crumbs.forEach((crumb, index) => {
-    crumb.classList.remove("hidden");
-    crumb.style.display = "block";
+  document.querySelectorAll(".crumb").forEach((crumb) => {
+    crumb.style.display = "inline-grid";
     crumb.style.opacity = "1";
-
-    const positions = [
-      { left: "27%", top: "45%" },
-      { left: "49%", top: "62%" },
-      { left: "68%", top: "40%" }
-    ];
-
-    crumb.style.left = positions[index].left;
-    crumb.style.top = positions[index].top;
+    crumb.style.transform = "scale(1)";
+    crumb.dataset.collected = "no";
   });
+}
 
-  $("movingBrush").style.left = "20px";
-  $("movingBrush").style.top = "15px";
+function getBrushRectangle() {
+  return $("movingBrush").getBoundingClientRect();
+}
+
+function rectanglesOverlap(a, b) {
+  return (
+    a.left < b.right &&
+    a.right > b.left &&
+    a.top < b.bottom &&
+    a.bottom > b.top
+  );
+}
+
+function checkFoodCollision() {
+  if (rescueCompleted) return;
+
+  const brushRect = getBrushRectangle();
+
+  document.querySelectorAll(".crumb").forEach((crumb) => {
+    if (crumb.dataset.collected === "yes") return;
+
+    const crumbRect = crumb.getBoundingClientRect();
+
+    if (rectanglesOverlap(brushRect, crumbRect)) {
+      collectCrumb(crumb);
+    }
+  });
 }
 
 function collectCrumb(crumb) {
   if (crumb.dataset.collected === "yes") return;
 
   crumb.dataset.collected = "yes";
-  crumb.style.display = "none";
+  crumb.style.opacity = "0";
+  crumb.style.transform = "scale(0)";
+  crumb.style.pointerEvents = "none";
 
-  rescued++;
+  setTimeout(() => {
+    crumb.style.display = "none";
+  }, 160);
 
-  $("rescuedCount").textContent = rescued;
-  $("rescueBar").style.width = (rescued / 3 * 100) + "%";
+  rescueCount++;
 
-  if (rescued === 3) {
+  $("rescuedCount").textContent = rescueCount;
+  $("rescueBar").style.width = (rescueCount / 3 * 100) + "%";
+
+  if (rescueCount < 3) {
     $("rescueMessage").textContent =
-      "УРА! Все кусочки спасены! Зубки чистые! ✨";
+      "Great job! " + (3 - rescueCount) + " more to go! ✨";
+  }
+
+  if (rescueCount === 3) {
+    rescueCompleted = true;
+    $("rescueMessage").textContent =
+      "Amazing! Every piece of food has been rescued! 🎉";
 
     $("rescueContinue").classList.remove("hidden");
-  } else {
-    $("rescueMessage").textContent =
-      "Отлично! Продолжай спасать еду! 💗";
   }
 }
 
-const brush = $("movingBrush");
-const mouth = $("mouthGame");
+const mouthGame = $("mouthGame");
+const movingBrush = $("movingBrush");
 
-if (brush && mouth) {
-  brush.addEventListener("pointerdown", event => {
-    brushMoving = true;
-    brush.setPointerCapture(event.pointerId);
-  });
+movingBrush.addEventListener("pointerdown", (event) => {
+  if (rescueCompleted) return;
 
-  brush.addEventListener("pointerup", () => {
-    brushMoving = false;
-  });
+  event.preventDefault();
+  event.stopPropagation();
 
-  brush.addEventListener("pointercancel", () => {
-    brushMoving = false;
-  });
+  rescuePointerId = event.pointerId;
 
-  brush.addEventListener("pointermove", event => {
-    if (!brushMoving) return;
+  try {
+    mouthGame.setPointerCapture(event.pointerId);
+  } catch (error) {
+    // Pointer capture may not be available in every browser.
+  }
 
-    const rect = mouth.getBoundingClientRect();
+  movingBrush.style.transform = "translate(-50%, -50%) scale(1.08)";
+});
 
-    let x = event.clientX - rect.left - 25;
-    let y = event.clientY - rect.top - 25;
+mouthGame.addEventListener("pointermove", (event) => {
+  if (rescuePointerId !== event.pointerId || rescueCompleted) return;
 
-    x = Math.max(0, Math.min(x, rect.width - 55));
-    y = Math.max(0, Math.min(y, rect.height - 55));
+  event.preventDefault();
 
-    brush.style.left = x + "px";
-    brush.style.top = y + "px";
+  const bounds = mouthGame.getBoundingClientRect();
 
-    const brushRect = brush.getBoundingClientRect();
+  let x = event.clientX - bounds.left;
+  let y = event.clientY - bounds.top;
 
-    document.querySelectorAll(".crumb").forEach(crumb => {
-      if (crumb.style.display === "none") return;
+  const halfBrush = movingBrush.offsetWidth / 2;
 
-      const crumbRect = crumb.getBoundingClientRect();
+  x = Math.max(halfBrush, Math.min(bounds.width - halfBrush, x));
+  y = Math.max(halfBrush, Math.min(bounds.height - halfBrush, y));
 
-      const touching =
-        brushRect.left < crumbRect.right &&
-        brushRect.right > crumbRect.left &&
-        brushRect.top < crumbRect.bottom &&
-        brushRect.bottom > crumbRect.top;
+  movingBrush.style.left = x + "px";
+  movingBrush.style.top = y + "px";
 
-      if (touching) {
-        collectCrumb(crumb);
-      }
-    });
-  });
+  checkFoodCollision();
+});
+
+function stopBrushDrag(event) {
+  if (rescuePointerId !== event.pointerId) return;
+
+  rescuePointerId = null;
+  movingBrush.style.transform = "translate(-50%, -50%)";
 }
+
+mouthGame.addEventListener("pointerup", stopBrushDrag);
+mouthGame.addEventListener("pointercancel", stopBrushDrag);
 
 function finishRescue() {
-  addCoins(15);
-  alert("Ты получил(а) 15 монет! 🪙");
-  showScreen("world");
+  const allFoodCollected = [...document.querySelectorAll(".crumb")]
+    .every((crumb) => crumb.dataset.collected === "yes");
+
+  if (rescueCount !== 3 || !allFoodCollected || !rescueCompleted) {
+    $("rescueMessage").textContent =
+      "Keep brushing! There is still food left to rescue.";
+    $("rescueContinue").classList.add("hidden");
+    return;
+  }
+
+  data.coins += 10;
+  saveData();
+
+  $("rescueMessage").textContent =
+    "You earned 10 coins! Your teeth are sparkling clean! 💖";
+
+  $("rescueContinue").textContent = "Back to my world";
+  $("rescueContinue").onclick = () => {
+    $("rescueContinue").textContent = "Continue ✨";
+    $("rescueContinue").onclick = finishRescue;
+    showScreen("world");
+  };
 }
 
-/* =====================================
-   DENTAL ANATOMY ACADEMY
-===================================== */
+/* =========================================
+   TOOTH ACADEMY
+========================================= */
 
-const anatomyDescriptions = {
-  "Резцы": "Резцы — передние зубы. Они помогают откусывать пищу. У взрослого человека обычно 8 резцов.",
-  "Клыки": "Клыки — заострённые зубы рядом с резцами. Они помогают отрывать и удерживать пищу. У взрослого обычно 4 клыка.",
-  "Малые коренные": "Малые коренные зубы находятся за клыками. Они помогают раздавливать и пережёвывать пищу. У взрослого обычно 8 таких зубов.",
-  "Большие коренные": "Большие коренные зубы расположены дальше всех. Их широкая поверхность помогает тщательно пережёвывать пищу. У взрослого обычно 12 больших коренных зубов, включая зубы мудрости.",
-  "Дёсны": "Дёсны — мягкая ткань вокруг зубов. Они помогают удерживать и защищать зубы.",
-  "Язык": "Язык помогает чувствовать вкус, перемещать пищу и участвует в речи.",
-  "Губы": "Губы помогают удерживать пищу во рту, говорить и выражать эмоции.",
-  "Нёбо": "Нёбо образует верхнюю часть полости рта. Оно разделяет полость рта и носовую полость."
+const toothDescriptions = {
+  Incisors: {
+    title: "Incisors",
+    text: "These are your front teeth. They help you bite and cut food into smaller pieces!"
+  },
+  Canines: {
+    title: "Canines",
+    text: "These pointed teeth help you tear food. You have canines near the front of your mouth."
+  },
+  Premolars: {
+    title: "Premolars",
+    text: "Premolars help crush and chew food. They are located between your canines and molars."
+  },
+  Molars: {
+    title: "Molars",
+    text: "Molars are the large teeth at the back of your mouth. They help grind food!"
+  }
 };
 
-function showPart(part) {
-  $("anatomyInfo").innerHTML = `
-    <h3>${part}</h3>
-    <p>${anatomyDescriptions[part] || "Изучай строение полости рта!"}</p>
-  `;
-}
+document.querySelectorAll(".tooth-part").forEach((button) => {
+  button.addEventListener("click", () => {
+    const info = toothDescriptions[button.dataset.part];
 
-document.querySelectorAll(".tooth").forEach(tooth => {
-  tooth.addEventListener("click", () => {
-    showPart(tooth.dataset.part);
+    $("anatomyInfo").innerHTML =
+      "<h2>" + info.title + "</h2><p>" + info.text + "</p>";
   });
 });
 
-function showAcademyTab(tab) {
-  $("jawTab").classList.toggle("hidden", tab !== "jaw");
-  $("toolsTab").classList.toggle("hidden", tab !== "tools");
-}
+const toolDescriptions = {
+  Toothbrush: "A toothbrush cleans the surfaces of your teeth. Brush gently for two minutes, twice a day!",
+  Toothpaste: "Toothpaste with fluoride helps protect your teeth and keep them strong.",
+  Floss: "Dental floss helps clean between your teeth where a toothbrush may not reach.",
+  Water: "Water helps rinse your mouth and keeps you hydrated. Choose water often!"
+};
 
-function showTool(name, description) {
-  $("toolInfo").innerHTML = `
-    <h3>${name}</h3>
-    <p>${description}</p>
-  `;
-}
+document.querySelectorAll(".tool-choice").forEach((button) => {
+  button.addEventListener("click", () => {
+    const name = button.dataset.tool;
 
-/* =====================================
-   ROOM SHOP CATALOG
-===================================== */
+    $("toolInfo").innerHTML =
+      "<h2>" + name + "</h2><p>" + toolDescriptions[name] + "</p>";
+  });
+});
 
-const catalog = {
+/* =========================================
+   DREAM HOME — SHOP CATALOG
+========================================= */
+
+const shopCatalog = {
   furniture: [
-    ["Кровать", "🛏️", 35],
-    ["Двуспальная кровать", "🛌", 55],
-    ["Диван", "🛋️", 45],
-    ["Кресло", "💺", 25],
-    ["Стол", "🪑", 25],
-    ["Обеденный стол", "🍽️", 45],
-    ["Стул", "🪑", 15],
-    ["Шкаф", "🚪", 40],
-    ["Комод", "🗄️", 35],
-    ["Книжная полка", "📚", 25],
-    ["Тумбочка", "🗃️", 20],
-    ["Письменный стол", "🖥️", 45],
-    ["Холодильник", "🧊", 55],
-    ["Плита", "🍳", 50],
-    ["Кухонная раковина", "🚰", 35],
-    ["Кухонные шкафы", "🗄️", 40],
-    ["Ванна", "🛁", 60],
-    ["Душ", "🚿", 50],
-    ["Зеркало", "🪞", 25],
-    ["Раковина для ванной", "🚰", 35],
-    ["Телевизор", "📺", 65],
-    ["Киноэкран", "🎬", 80],
-    ["Кресло для кино", "💺", 35],
-    ["Попкорн-машина", "🍿", 45],
-    ["Игровой стол", "🎮", 60],
-    ["Пианино", "🎹", 70],
-    ["Ковёр", "🧶", 20],
-    ["Напольная лампа", "💡", 20]
+    { id: "bed", name: "Cozy Bed", emoji: "🛏️", price: 35 },
+    { id: "desk", name: "Study Desk", emoji: "🪑", price: 25 },
+    { id: "dining-table", name: "Dining Table", emoji: "🍽️", price: 30 },
+    { id: "coffee-table", name: "Coffee Table", emoji: "🪵", price: 20 },
+    { id: "bedside-table", name: "Bedside Table", emoji: "🗄️", price: 18 },
+    { id: "sofa", name: "Soft Sofa", emoji: "🛋️", price: 40 },
+    { id: "chair", name: "Comfy Chair", emoji: "💺", price: 20 },
+    { id: "wardrobe", name: "Wardrobe", emoji: "🚪", price: 32 },
+    { id: "bookshelf", name: "Bookshelf", emoji: "📚", price: 28 },
+    { id: "fridge", name: "Fridge", emoji: "🧊", price: 35 },
+    { id: "cabinet", name: "Cabinet", emoji: "🗄️", price: 25 },
+    { id: "dining-chair", name: "Dining Chair", emoji: "🪑", price: 15 }
   ],
 
   decor: [
-    ["Комнатное растение", "🪴", 15],
-    ["Цветочная ваза", "💐", 20],
-    ["Картина", "🖼️", 25],
-    ["Настенные часы", "🕰️", 20],
-    ["Настольная лампа", "🛋️", 15],
-    ["Плюшевый мишка", "🧸", 20],
-    ["Кукла", "🎎", 25],
-    ["Игрушечный домик", "🏠", 35],
-    ["Глобус", "🌎", 20],
-    ["Книги", "📚", 15],
-    ["Свеча", "🕯️", 10],
-    ["Подушки", "🛏️", 15],
-    ["Звёздный светильник", "🌟", 30],
-    ["Аквариум", "🐠", 45],
-    ["Настенный декор", "🪄", 20],
-    ["Будильник", "⏰", 15]
+    { id: "lamp", name: "Cute Lamp", emoji: "💡", price: 12 },
+    { id: "plant", name: "House Plant", emoji: "🪴", price: 15 },
+    { id: "painting", name: "Wall Art", emoji: "🖼️", price: 18 },
+    { id: "teddy", name: "Teddy Bear", emoji: "🧸", price: 20 },
+    { id: "rug", name: "Soft Rug", emoji: "🟣", price: 18 },
+    { id: "clock", name: "Wall Clock", emoji: "🕰️", price: 15 },
+    { id: "flower", name: "Flower Vase", emoji: "💐", price: 14 },
+    { id: "mirror", name: "Mirror", emoji: "🪞", price: 20 },
+    { id: "star", name: "Star Decoration", emoji: "⭐", price: 10 },
+    { id: "balloon", name: "Balloons", emoji: "🎈", price: 10 }
   ],
 
   garden: [
-    ["Роза", "🌹", 15],
-    ["Тюльпан", "🌷", 12],
-    ["Подсолнух", "🌻", 15],
-    ["Ромашка", "🌼", 10],
-    ["Цветочный куст", "🌺", 20],
-    ["Кактус", "🌵", 12],
-    ["Пальма", "🌴", 35],
-    ["Яблоня", "🌳", 45],
-    ["Сосна", "🌲", 35],
-    ["Куст роз", "🥀", 25],
-    ["Горшок с цветами", "🪴", 20],
-    ["Садовая скамейка", "🪑", 30],
-    ["Садовый фонарь", "🏮", 25],
-    ["Гирлянда", "✨", 30],
-    ["Качели", "🎠", 65],
-    ["Карусель", "🎡", 100],
-    ["Пруд", "💧", 55],
-    ["Фонтан", "⛲", 75],
-    ["Садовый столик", "🍵", 30],
-    ["Садовый зонт", "⛱️", 35],
-    ["Гамак", "🛏️", 40],
-    ["Птичий домик", "🐦", 20],
-    ["Садовая дорожка", "🪨", 20],
-    ["Бабочки", "🦋", 15],
-    ["Садовый гном", "🧙", 25],
-    ["Качалка", "🛝", 55],
-    ["Качели-балансир", "🎠", 50],
-    ["Детская горка", "🛝", 55]
+    { id: "tree", name: "Garden Tree", emoji: "🌳", price: 30 },
+    { id: "bush", name: "Green Bush", emoji: "🌿", price: 12 },
+    { id: "flowers", name: "Flower Bed", emoji: "🌷", price: 15 },
+    { id: "swing", name: "Garden Swing", emoji: "🎠", price: 40 },
+    { id: "lantern", name: "Garden Lantern", emoji: "🏮", price: 20 },
+    { id: "fountain", name: "Water Fountain", emoji: "⛲", price: 35 },
+    { id: "bench", name: "Garden Bench", emoji: "🪑", price: 25 },
+    { id: "butterfly", name: "Butterflies", emoji: "🦋", price: 10 },
+    { id: "mushroom", name: "Garden Mushroom", emoji: "🍄", price: 12 },
+    { id: "sunflower", name: "Sunflowers", emoji: "🌻", price: 15 }
   ],
 
-  wall: [
-    ["Нежно-розовые стены", "#f6dfe6", 10],
-    ["Лавандовые стены", "#e8e0fa", 10],
-    ["Мятные стены", "#d9f0e2", 10],
-    ["Голубые стены", "#dcecf9", 10],
-    ["Персиковые стены", "#fbe2d2", 10],
-    ["Кремовые стены", "#fff0d5", 10],
-    ["Небесные стены", "#cce6f5", 15],
-    ["Сиреневые стены", "#d8c7ed", 15],
-    ["Зелёные стены", "#dce9c9", 15],
-    ["Звёздные стены", "#d9d2f5", 20]
+  walls: [
+    { id: "wall-pink", name: "Blush Pink", color: "#f9dce7" },
+    { id: "wall-lilac", name: "Soft Lilac", color: "#e9e0fa" },
+    { id: "wall-blue", name: "Sky Blue", color: "#dceffc" },
+    { id: "wall-green", name: "Mint Green", color: "#e0f2e5" },
+    { id: "wall-cream", name: "Vanilla Cream", color: "#fff0d8" },
+    { id: "wall-peach", name: "Peach", color: "#f9e0d4" },
+    { id: "wall-white", name: "Cloud White", color: "#fffafd" }
   ],
 
   rooms: [
-    ["Кухня", "🍳", 100],
-    ["Гостиная", "🛋️", 100],
-    ["Детская", "🧸", 120],
-    ["Ванная", "🛁", 100],
-    ["Кинотеатр", "🎬", 180],
-    ["Игровая", "🎮", 140],
-    ["Сад", "🌷", 150]
+    { id: "room-living", name: "Living Room", emoji: "🛋️", price: 60 },
+    { id: "room-kitchen", name: "Kitchen", emoji: "🍳", price: 55 },
+    { id: "room-bathroom", name: "Bathroom", emoji: "🛁", price: 50 },
+    { id: "room-playroom", name: "Playroom", emoji: "🧸", price: 65 },
+    { id: "room-study", name: "Study Room", emoji: "📚", price: 60 },
+    { id: "room-garden", name: "Garden", emoji: "🌳", price: 75 }
   ]
 };
 
-let selectedShopCategory = "furniture";
-let selectedRoomItem = null;
+const roomNames = {
+  "Bedroom": "Bedroom",
+  "Living Room": "Living Room",
+  "Kitchen": "Kitchen",
+  "Bathroom": "Bathroom",
+  "Playroom": "Playroom",
+  "Study Room": "Study Room",
+  "Garden": "Garden"
+};
 
-function openRoom() {
-  showScreen("room");
-  renderRoom();
-  showShop("furniture");
+const roomCategoryNames = {
+  furniture: "Furniture shop",
+  decor: "Decor shop",
+  garden: "Garden shop",
+  walls: "Wall colors",
+  rooms: "New rooms"
+};
+
+function getCatalogItem(id) {
+  for (const category of Object.values(shopCatalog)) {
+    const found = category.find((item) => item.id === id);
+    if (found) return found;
+  }
+  return null;
 }
 
-function showShop(category) {
-  selectedShopCategory = category;
-
-  document.querySelectorAll(".room-tabs button").forEach(button => {
-    button.style.background = "white";
-  });
-
-  const buttons = document.querySelectorAll(".room-tabs button");
-  const categories = ["furniture", "decor", "wall", "garden", "rooms"];
-  const index = categories.indexOf(category);
-
-  if (buttons[index]) {
-    buttons[index].style.background = "#f5e5f1";
-  }
-
-  renderShop();
-}
-
-function renderShop() {
-  const grid = $("shopGrid");
-  grid.innerHTML = "";
-
-  const items = catalog[selectedShopCategory] || [];
-
-  items.forEach((item, index) => {
-    const [name, emoji, price] = item;
-
-    const card = document.createElement("div");
-    card.className = "shop-item";
-
-    const alreadyOwned =
-      data.inventory.includes(name) ||
-      (selectedShopCategory === "rooms" &&
-       data.unlockedRooms.includes(name));
-
-    card.innerHTML = `
-      <div class="item-emoji">${emoji}</div>
-      <strong>${name}</strong>
-      <p>🪙 ${price}</p>
-      <button>${alreadyOwned ? "Уже куплено" : "Купить"}</button>
-    `;
-
-    card.querySelector("button").disabled = alreadyOwned;
-    card.querySelector("button").style.opacity =
-      alreadyOwned ? ".5" : "1";
-
-    card.querySelector("button").addEventListener("click", () => {
-      buyItem(selectedShopCategory, index);
-    });
-
-    grid.appendChild(card);
-  });
-}
-
-function buyItem(category, index) {
-  const item = catalog[category][index];
-  const [name, value, price] = item;
-
-  if (data.coins < price) {
-    $("shopMessage").textContent =
-      "Пока не хватает монет. Играй и зарабатывай! ⭐";
-    return;
-  }
-
-  if (category === "rooms") {
-    if (data.unlockedRooms.includes(name)) return;
-
-    data.coins -= price;
-    data.unlockedRooms.push(name);
-    data.currentRoom = name;
-
-    if (!data.roomItems[name]) {
-      data.roomItems[name] = [];
-    }
-
-    if (!data.wallColors[name]) {
-      data.wallColors[name] = "#f6dfe6";
-    }
-
-    saveData();
-    renderRoom();
-    renderShop();
-
-    $("shopMessage").textContent =
-      "Поздравляем! Ты открыл(а) комнату: " + name + " 🎉";
-    return;
-  }
-
-  if (category === "wall") {
-    data.coins -= price;
-    data.wallColors[data.currentRoom] = value;
-
-    saveData();
-    renderRoom();
-    $("shopMessage").textContent =
-      "Цвет стен изменён! 🎨";
-    return;
-  }
-
-  if (data.inventory.includes(name)) {
-    $("shopMessage").textContent = "Этот предмет уже куплен!";
-    return;
-  }
-
-  data.coins -= price;
-  data.inventory.push(name);
-
-  if (!data.roomItems[data.currentRoom]) {
-    data.roomItems[data.currentRoom] = [];
-  }
-
-  data.roomItems[data.currentRoom].push({
-    name,
-    emoji: value,
-    x: 45 + Math.random() * 100,
-    y: 150 + Math.random() * 100,
-    size: 100
-  });
-
-  saveData();
-  renderRoom();
-  renderShop();
-
-  $("shopMessage").textContent =
-    "Ты купил(а): " + name + "! Теперь расставь его в комнате. 💗";
-}
-
-/* =====================================
-   ROOM DECORATING AND ITEM MOVEMENT
-===================================== */
-
-function currentRoomItems() {
-  if (!data.roomItems[data.currentRoom]) {
+function getCurrentRoomItems() {
+  if (!Array.isArray(data.roomItems[data.currentRoom])) {
     data.roomItems[data.currentRoom] = [];
   }
 
   return data.roomItems[data.currentRoom];
 }
 
+function setShopMessage(message) {
+  $("shopMessage").textContent = message;
+}
+
+function renderShop() {
+  $("shopTitle").textContent = roomCategoryNames[currentShopCategory];
+
+  const grid = $("shopGrid");
+  grid.innerHTML = "";
+
+  const items = shopCatalog[currentShopCategory] || [];
+
+  items.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "shop-item";
+
+    if (currentShopCategory === "walls") {
+      const button = document.createElement("button");
+      button.textContent = "Choose color";
+
+      button.addEventListener("click", () => {
+        data.wallColors[data.currentRoom] = item.color;
+        saveData();
+        renderRoom();
+        setShopMessage(item.name + " selected!");
+      });
+
+      card.innerHTML =
+        '<div class="shop-item-emoji">🎨</div>' +
+        "<strong>" + item.name + "</strong>";
+
+      const swatch = document.createElement("div");
+      swatch.style.width = "100%";
+      swatch.style.height = "25px";
+      swatch.style.borderRadius = "10px";
+      swatch.style.background = item.color;
+
+      card.appendChild(swatch);
+      card.appendChild(button);
+    } else if (currentShopCategory === "rooms") {
+      const unlocked = data.unlockedRooms.includes(item.name);
+
+      card.innerHTML =
+        '<div class="shop-item-emoji">' + item.emoji + "</div>" +
+        "<strong>" + item.name + "</strong>" +
+        "<small>🪙 " + item.price + "</small>";
+
+      const button = document.createElement("button");
+      button.textContent = unlocked ? "Already unlocked" : "Unlock room";
+      button.disabled = unlocked;
+
+      button.addEventListener("click", () => {
+        buyRoom(item);
+      });
+
+      card.appendChild(button);
+    } else {
+      const count = data.inventory.filter((id) => id === item.id).length;
+
+      card.innerHTML =
+        '<div class="shop-item-emoji">' + item.emoji + "</div>" +
+        "<strong>" + item.name + "</strong>" +
+        "<small>🪙 " + item.price + (count ? " · Owned: " + count : "") + "</small>";
+
+      const button = document.createElement("button");
+      button.textContent = "Buy · " + item.price;
+
+      button.addEventListener("click", () => {
+        buyFurniture(item);
+      });
+
+      card.appendChild(button);
+    }
+
+    grid.appendChild(card);
+  });
+
+  updateCoins();
+}
+
+function buyFurniture(item) {
+  if (data.coins < item.price) {
+    setShopMessage("You need more coins to buy this item.");
+    return;
+  }
+
+  data.coins -= item.price;
+  data.inventory.push(item.id);
+
+  saveData();
+  renderShop();
+  renderInventory();
+
+  setShopMessage(item.name + " added to your collection! 💗");
+}
+
+function buyRoom(item) {
+  if (data.unlockedRooms.includes(item.name)) {
+    setShopMessage("You already own this room!");
+    return;
+  }
+
+  if (data.coins < item.price) {
+    setShopMessage("You need more coins to unlock this room.");
+    return;
+  }
+
+  data.coins -= item.price;
+  data.unlockedRooms.push(item.name);
+
+  if (!data.roomItems[item.name]) {
+    data.roomItems[item.name] = [];
+  }
+
+  if (!data.wallColors[item.name]) {
+    data.wallColors[item.name] = "#f4e8ff";
+  }
+
+  data.currentRoom = item.name;
+
+  saveData();
+  renderRoomSelector();
+  renderRoom();
+  renderShop();
+  renderInventory();
+
+  setShopMessage(item.name + " is now yours! 🎉");
+}
+
+/* =========================================
+   ROOM SELECTOR
+========================================= */
+
+function renderRoomSelector() {
+  const select = $("roomSelect");
+  select.innerHTML = "";
+
+  data.unlockedRooms.forEach((roomName) => {
+    const option = document.createElement("option");
+    option.value = roomName;
+    option.textContent = roomNames[roomName] || roomName;
+    select.appendChild(option);
+  });
+
+  select.value = data.currentRoom;
+}
+
+$("roomSelect").addEventListener("change", () => {
+  const chosenRoom = $("roomSelect").value;
+
+  if (!data.unlockedRooms.includes(chosenRoom)) return;
+
+  data.currentRoom = chosenRoom;
+  selectedRoomItem = null;
+
+  saveData();
+  renderRoom();
+  renderShop();
+  renderInventory();
+
+  setShopMessage("Welcome to your " + chosenRoom + "!");
+});
+
+/* =========================================
+   ROOM ITEMS — PLACE AND MOVE
+========================================= */
+
 function renderRoom() {
   const stage = $("roomStage");
+  const wall = stage.querySelector(".room-wall");
   const container = $("roomItems");
 
-  if (!stage || !container) return;
-
-  const backgrounds = {
-    "Спальня": "#f6dfe6",
-    "Кухня": "#e5f0e6",
-    "Гостиная": "#e8e0fa",
-    "Детская": "#fce8ca",
-    "Ванная": "#dcecf9",
-    "Кинотеатр": "#d6c9e8",
-    "Игровая": "#e4e4fa",
-    "Сад": "#d9f0e2"
-  };
-
-  stage.style.background =
-    backgrounds[data.currentRoom] || "#f6dfe6";
-
-  const wallColor =
-    data.wallColors[data.currentRoom] ||
-    backgrounds[data.currentRoom] ||
-    "#f6dfe6";
-
-  if (data.currentRoom !== "Сад") {
-    stage.style.background =
-      `linear-gradient(to bottom, ${wallColor} 0 65%, #d9bda4 65% 100%)`;
-  } else {
-    stage.style.background =
-      "linear-gradient(to bottom, #cce9f7 0 45%, #9ccf91 45% 100%)";
-  }
+  wall.style.background =
+    data.wallColors[data.currentRoom] || "#f4e8ff";
 
   container.innerHTML = "";
 
-  currentRoomItems().forEach((item, index) => {
-    const element = document.createElement("div");
+  const items = getCurrentRoomItems();
 
+  items.forEach((roomItem) => {
+    const catalogItem = getCatalogItem(roomItem.id);
+    if (!catalogItem) return;
+
+    const element = document.createElement("button");
     element.className = "room-item";
-    element.textContent = item.emoji;
-    element.style.left = item.x + "px";
-    element.style.top = item.y + "px";
-    element.style.fontSize = (55 * item.size / 100) + "px";
+    element.type = "button";
+    element.textContent = catalogItem.emoji;
+    element.setAttribute("aria-label", catalogItem.name);
 
-    if (selectedRoomItem === index) {
+    if (selectedRoomItem === roomItem.uid) {
       element.classList.add("selected");
     }
 
-    element.addEventListener("pointerdown", event => {
-      if (event.target !== element) return;
+    element.style.left = (roomItem.x ?? 50) + "%";
+    element.style.top = (roomItem.y ?? 65) + "%";
+    element.style.transform =
+      "translate(-50%, -50%) rotate(" +
+      (roomItem.rotation || 0) +
+      "deg) scale(" +
+      ((roomItem.size || 100) / 100) +
+      ")";
 
-      selectedRoomItem = index;
+    element.addEventListener("click", (event) => {
+      event.stopPropagation();
+      selectedRoomItem = roomItem.uid;
+      updateSelectedItem();
+      renderRoom();
+    });
 
-      const rect = stage.getBoundingClientRect();
-      const offsetX = event.clientX - rect.left - item.x;
-      const offsetY = event.clientY - rect.top - item.y;
+    element.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      selectedRoomItem = roomItem.uid;
+      updateSelectedItem();
+
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const startLeft = roomItem.x ?? 50;
+      const startTop = roomItem.y ?? 65;
+      const stageRect = stage.getBoundingClientRect();
 
       element.setPointerCapture(event.pointerId);
 
       function moveItem(moveEvent) {
-        const x = moveEvent.clientX - rect.left - offsetX;
-        const y = moveEvent.clientY - rect.top - offsetY;
+        if (moveEvent.pointerId !== event.pointerId) return;
 
-        item.x = Math.max(0, Math.min(x, rect.width - 45));
-        item.y = Math.max(0, Math.min(y, rect.height - 45));
+        const deltaX =
+          (moveEvent.clientX - startX) / stageRect.width * 100;
 
-        element.style.left = item.x + "px";
-        element.style.top = item.y + "px";
+        const deltaY =
+          (moveEvent.clientY - startY) / stageRect.height * 100;
+
+        roomItem.x = Math.max(5, Math.min(95, startLeft + deltaX));
+        roomItem.y = Math.max(5, Math.min(95, startTop + deltaY));
+
+        element.style.left = roomItem.x + "%";
+        element.style.top = roomItem.y + "%";
       }
 
-      function stopMoving() {
+      function finishMove(moveEvent) {
+        if (moveEvent.pointerId !== event.pointerId) return;
+
         element.removeEventListener("pointermove", moveItem);
-        element.removeEventListener("pointerup", stopMoving);
-        element.removeEventListener("pointercancel", stopMoving);
+        element.removeEventListener("pointerup", finishMove);
+        element.removeEventListener("pointercancel", finishMove);
 
         saveData();
-        renderRoom();
+        updateSelectedItem();
       }
 
       element.addEventListener("pointermove", moveItem);
-      element.addEventListener("pointerup", stopMoving);
-      element.addEventListener("pointercancel", stopMoving);
-    });
-
-    element.addEventListener("click", () => {
-      selectedRoomItem = index;
-      $("itemSize").value = item.size;
-      renderRoom();
+      element.addEventListener("pointerup", finishMove);
+      element.addEventListener("pointercancel", finishMove);
     });
 
     container.appendChild(element);
   });
+
+  updateSelectedItem();
 }
 
-$("itemSize").addEventListener("input", event => {
-  if (selectedRoomItem === null) return;
+function renderInventory() {
+  const grid = $("inventoryGrid");
+  grid.innerHTML = "";
 
-  const item = currentRoomItems()[selectedRoomItem];
+  if (data.inventory.length === 0) {
+    grid.innerHTML =
+      "<p>You don't own any furniture yet. Visit the shop to get started!</p>";
+    return;
+  }
 
+  const counts = {};
+
+  data.inventory.forEach((id) => {
+    counts[id] = (counts[id] || 0) + 1;
+  });
+
+  Object.entries(counts).forEach(([id, count]) => {
+    const item = getCatalogItem(id);
+    if (!item) return;
+
+    const card = document.createElement("div");
+    card.className = "inventory-item";
+
+    card.innerHTML =
+      '<div class="inventory-item-emoji">' + item.emoji + "</div>" +
+      "<strong>" + item.name + "</strong>" +
+      "<small>Owned: " + count + "</small>";
+
+    const button = document.createElement("button");
+    button.textContent = "Place in room";
+
+    button.addEventListener("click", () => {
+      placeFurniture(id);
+    });
+
+    card.appendChild(button);
+    grid.appendChild(card);
+  });
+}
+
+function placeFurniture(id) {
+  const inventoryIndex = data.inventory.indexOf(id);
+
+  if (inventoryIndex === -1) {
+    setShopMessage("You need to buy this item first.");
+    return;
+  }
+
+  data.inventory.splice(inventoryIndex, 1);
+
+  const roomItems = getCurrentRoomItems();
+
+  const newItem = {
+    uid: "item-" + Date.now() + "-" + Math.floor(Math.random() * 100000),
+    id: id,
+    x: 50,
+    y: 65,
+    size: 100,
+    rotation: 0
+  };
+
+  roomItems.push(newItem);
+  selectedRoomItem = newItem.uid;
+
+  saveData();
+  renderRoom();
+  renderInventory();
+
+  setShopMessage("Your item has been placed! Drag it to move it.");
+}
+
+function findSelectedRoomItem() {
+  return getCurrentRoomItems().find(
+    (item) => item.uid === selectedRoomItem
+  );
+}
+
+function updateSelectedItem() {
+  const item = findSelectedRoomItem();
+
+  if (!item) {
+    $("selectedItemInfo").textContent =
+      "Select an item in your room to edit it.";
+    $("itemSize").value = 100;
+    return;
+  }
+
+  const catalogItem = getCatalogItem(item.id);
+
+  $("selectedItemInfo").textContent =
+    catalogItem ? catalogItem.name + " selected" : "Furniture selected";
+
+  $("itemSize").value = item.size || 100;
+}
+
+$("itemSize").addEventListener("input", () => {
+  const item = findSelectedRoomItem();
   if (!item) return;
 
-  item.size = Number(event.target.value);
+  item.size = Number($("itemSize").value);
 
-  renderRoom();
+  const element = [...document.querySelectorAll(".room-item")].find(
+    (el) => el.classList.contains("selected")
+  );
+
+  if (element) {
+    element.style.transform =
+      "translate(-50%, -50%) rotate(" +
+      (item.rotation || 0) +
+      "deg) scale(" +
+      (item.size / 100) +
+      ")";
+  }
+
   saveData();
 });
 
-/* =====================================
-   MORNING AND EVENING TOOTHBRUSH TIMER
-===================================== */
+$("rotateItem").addEventListener("click", () => {
+  const item = findSelectedRoomItem();
+  if (!item) return;
 
-let activeTimer = null;
-let timerInterval = null;
-let secondsLeft = 120;
+  item.rotation = (item.rotation || 0) + 15;
+  saveData();
+  renderRoom();
+});
 
-function localDateKey() {
+$("removeItem").addEventListener("click", () => {
+  const items = getCurrentRoomItems();
+  const index = items.findIndex(
+    (item) => item.uid === selectedRoomItem
+  );
+
+  if (index === -1) return;
+
+  const removed = items.splice(index, 1)[0];
+
+  data.inventory.push(removed.id);
+  selectedRoomItem = null;
+
+  saveData();
+  renderRoom();
+  renderInventory();
+
+  setShopMessage("Item returned to your collection.");
+});
+
+/* =========================================
+   SHOP TABS
+========================================= */
+
+document.querySelectorAll(".room-tab").forEach((button) => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".room-tab").forEach((tab) => {
+      tab.classList.remove("active");
+    });
+
+    button.classList.add("active");
+    currentShopCategory = button.dataset.category;
+
+    renderShop();
+
+    if (currentShopCategory === "garden" &&
+        data.currentRoom !== "Garden") {
+      setShopMessage(
+        "You can buy garden decorations here and place them in your Garden room."
+      );
+    } else {
+      setShopMessage("");
+    }
+  });
+});
+
+/* =========================================
+   BRUSHING ROUTINE AND TIMER
+========================================= */
+
+function getTodayKey() {
   const now = new Date();
+
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
 
-  return `${year}-${month}-${day}`;
+  return year + "-" + month + "-" + day;
 }
 
-function formatTime(seconds) {
-  const minutes = Math.floor(seconds / 60);
-  const remaining = seconds % 60;
+function updateRoutineDisplay() {
+  const today = getTodayKey();
 
-  return String(minutes).padStart(2, "0") + ":" +
-    String(remaining).padStart(2, "0");
+  $("morningState").textContent =
+    data.morningDone === today ? "Completed today ✓" : "Not completed yet";
+
+  $("eveningState").textContent =
+    data.eveningDone === today ? "Completed today ✓" : "Not completed yet";
+
+  $("streakDays").textContent = data.streak;
 }
 
 function startTimer(type) {
-  if (activeTimer) {
-    $("timerMessage").textContent =
-      "Сначала закончи текущую чистку! 🪥";
-    return;
-  }
-
-  const today = localDateKey();
-  const completed =
-    type === "morning" ? data.morningDone : data.eveningDone;
-
-  if (completed === today) {
-    $("timerMessage").textContent =
-      "Ты уже выполнил(а) эту чистку сегодня! ⭐";
-    return;
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
   }
 
   activeTimer = type;
-  secondsLeft = 120;
+  timerSeconds = 120;
 
   $("timerMessage").textContent =
-    "Отлично! Чистим зубки целых две минуты!";
+    type === "morning"
+      ? "Good morning! Let's brush your teeth!"
+      : "Good night! Let's clean your teeth before bed!";
 
-  $("stopTimer").classList.remove("hidden");
-
-  $("morningStart").disabled = true;
-  $("eveningStart").disabled = true;
-
-  updateTimerDisplay();
+  $("timerDisplay").textContent = "02:00";
 
   timerInterval = setInterval(() => {
-    secondsLeft--;
-    updateTimerDisplay();
+    timerSeconds--;
 
-    if (secondsLeft <= 0) {
+    const minutes = Math.floor(timerSeconds / 60);
+    const seconds = timerSeconds % 60;
+
+    $("timerDisplay").textContent =
+      String(minutes).padStart(2, "0") +
+      ":" +
+      String(seconds).padStart(2, "0");
+
+    if (timerSeconds <= 0) {
+      clearInterval(timerInterval);
+      timerInterval = null;
       completeTimer();
     }
   }, 1000);
 }
 
-function updateTimerDisplay() {
-  const display =
-    activeTimer === "morning" ? $("morningTime") : $("eveningTime");
-
-  if (display) {
-    display.textContent = formatTime(secondsLeft);
-  }
-}
-
 function completeTimer() {
-  clearInterval(timerInterval);
-  timerInterval = null;
-
-  const today = localDateKey();
+  const today = getTodayKey();
 
   if (activeTimer === "morning") {
     data.morningDone = today;
-    $("morningState").textContent = "Выполнено! 🌞";
-  } else {
+  }
+
+  if (activeTimer === "evening") {
     data.eveningDone = today;
-    $("eveningState").textContent = "Выполнено! 🌙";
   }
 
-  addCoins(10);
+  if (
+    data.morningDone === today &&
+    data.eveningDone === today &&
+    data.lastStreakDate !== today
+  ) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
 
-  if (data.morningDone === today && data.eveningDone === today) {
-    data.streak++;
-    addCoins(10);
-    $("streakDays").textContent =
-      "🔥 " + data.streak + " дней! Обе чистки выполнены!";
+    const yesterdayKey =
+      yesterday.getFullYear() + "-" +
+      String(yesterday.getMonth() + 1).padStart(2, "0") + "-" +
+      String(yesterday.getDate()).padStart(2, "0");
+
+    data.streak =
+      data.lastStreakDate === yesterdayKey
+        ? data.streak + 1
+        : 1;
+
+    data.lastStreakDate = today;
   }
-
-  activeTimer = null;
-
-  $("timerMessage").textContent =
-    "Прекрасная работа! Ты получил(а) монетки! 🪙";
-
-  $("stopTimer").classList.add("hidden");
-
-  $("morningStart").disabled = false;
-  $("eveningStart").disabled = false;
 
   saveData();
-  updateTimerButtons();
-}
+  updateRoutineDisplay();
 
-function stopTimer() {
-  if (!activeTimer) return;
-
-  clearInterval(timerInterval);
-  timerInterval = null;
+  $("timerDisplay").textContent = "02:00";
+  $("timerMessage").textContent =
+    "Wonderful! You completed your two-minute brushing session! 🌟";
 
   activeTimer = null;
-  secondsLeft = 120;
+}
 
-  $("morningTime").textContent = "02:00";
-  $("eveningTime").textContent = "02:00";
+$("morningStart").addEventListener("click", () => {
+  startTimer("morning");
+});
 
-  $("morningStart").disabled = false;
-  $("eveningStart").disabled = false;
+$("eveningStart").addEventListener("click", () => {
+  startTimer("evening");
+});
 
-  $("stopTimer").classList.add("hidden");
+$("stopTimer").addEventListener("click", () => {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
 
+  activeTimer = null;
+  timerSeconds = 120;
+
+  $("timerDisplay").textContent = "02:00";
   $("timerMessage").textContent =
-    "Таймер остановлен. Попробуй ещё раз!";
+    "Timer stopped. You can start again whenever you're ready.";
+});
 
-  updateTimerButtons();
-}
+/* =========================================
+   INITIALIZE THE GAME
+========================================= */
 
-function updateTimerButtons() {
-  const today = localDateKey();
+function initializeGame() {
+  updateCoins();
+  loadProfileIntoPage();
 
-  $("morningStart").disabled =
-    data.morningDone === today || activeTimer !== null;
+  renderRoomSelector();
+  renderRoom();
+  renderShop();
+  renderInventory();
 
-  $("eveningStart").disabled =
-    data.eveningDone === today || activeTimer !== null;
-}
+  updateRoutineDisplay();
 
-/* =====================================
-   STARTUP
-===================================== */
-
-updateWallet();
-updateTimerButtons();
-loadProfile();
-
-/* Кнопка спасения сначала ведёт к перекусу */
-const rescueCard = document.querySelector(".feature-card");
-
-if (rescueCard) {
-  rescueCard.onclick = () => showScreen("snack");
-}
-
-/* Если профиль ещё не создан, показываем приветствие */
-if (!data.name) {
   showScreen("home");
 }
+
+initializeGame();
