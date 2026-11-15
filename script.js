@@ -1,55 +1,77 @@
 
-const $ = id => document.getElementById(id);
+/* =====================================
+   TOOTHTALES — MAIN GAME SCRIPT
+===================================== */
 
-const STORE = "toothtales_complete_v1";
+const $ = (id) => document.getElementById(id);
 
-const defaults = {
+const STORAGE_KEY = "toothtales_save_v2";
+
+const defaultData = {
   name: "",
   age: "",
-  color: "#b99be8",
-  coins: 120,
-  streak: 0,
-  lastCompleted: "",
+  color: "#f5b6c8",
+  coins: 100,
+  inventory: [],
+  unlockedRooms: ["Спальня"],
+  currentRoom: "Спальня",
+  roomItems: {},
+  wallColors: {
+    "Спальня": "#f6dfe6"
+  },
   morningDone: "",
   eveningDone: "",
-  owned: [],
-  placed: []
+  streak: 0
 };
 
-let data = { ...defaults };
+let data;
 
 try {
-  const saved = JSON.parse(localStorage.getItem(STORE) || "null");
-  if (saved) data = { ...defaults, ...saved };
-} catch (e) {}
-
-function save() {
-  localStorage.setItem(STORE, JSON.stringify(data));
-  updateHeader();
+  data = {
+    ...defaultData,
+    ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}")
+  };
+} catch {
+  data = { ...defaultData };
 }
 
-function updateHeader() {
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  updateWallet();
+}
+
+function updateWallet() {
   $("coinCount").textContent = data.coins;
-  $("streakCount").textContent = data.streak;
 }
 
-function showScreen(id) {
+function addCoins(amount) {
+  data.coins += amount;
+  saveData();
+}
+
+/* =====================================
+   NAVIGATION AND PROFILE
+===================================== */
+
+function showScreen(name) {
   document.querySelectorAll(".screen").forEach(screen => {
     screen.classList.add("hidden");
   });
 
-  $(id).classList.remove("hidden");
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
+  const target = $(name);
 
-/* PROFILE */
+  if (target) {
+    target.classList.remove("hidden");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+}
 
 function saveProfile() {
   const name = $("childName").value.trim();
   const age = $("childAge").value;
 
-  if (!name || !age) {
-    alert("Please add a name and age first.");
+  if (!name) {
+    alert("Напиши своё имя! 💗");
     return;
   }
 
@@ -57,606 +79,726 @@ function saveProfile() {
   data.age = age;
   data.color = $("avatarColor").value;
 
-  save();
-
-  $("playerName").textContent = name;
-  $("avatarGreeting").textContent = name + "'s smile buddy";
-  $("avatarFace").style.background = data.color;
-
+  saveData();
+  updateProfile();
   showScreen("world");
 }
 
-/* SNACK TIME */
+function updateProfile() {
+  if (data.name) {
+    $("playerName").textContent = data.name;
+  }
 
-function chooseSnack(name, emoji) {
-  $("eatingAvatar").textContent = "😋";
-  $("eatingAvatar").classList.add("chewing");
-
-  $("eatingText").textContent =
-    `Munch, munch! ${name} is a tasty choice.`;
-
-  $("afterSnackBtn").classList.remove("hidden");
-  $("eatingAvatar").dataset.snack = emoji;
+  $("coinCount").textContent = data.coins;
+  $("avatarFace").style.background = data.color;
 }
 
-/* BRUSH & RESCUE */
+function loadProfile() {
+  if (data.name) {
+    $("childName").value = data.name;
+    $("childAge").value = data.age || "";
+    $("avatarColor").value = data.color;
+    updateProfile();
+    showScreen("world");
+  }
+}
+
+/* =====================================
+   SNACK AND FOOD RESCUE GAME
+===================================== */
+
+let selectedSnack = {
+  name: "Яблоко",
+  emoji: "🍎"
+};
+
+function chooseSnack(name, emoji) {
+  selectedSnack = { name, emoji };
+
+  $("eatingAvatar").textContent = "🧚🏻‍♀️ 😋";
+  $("eatingText").textContent = "Ням-ням! Ты съел(а): " + name;
+  $("afterSnackBtn").classList.remove("hidden");
+}
 
 let rescued = 0;
-let brushing = false;
-
-const mouth = $("mouthGame");
-const brush = $("movingBrush");
+let brushMoving = false;
 
 function startRescue() {
-  document.querySelectorAll(".food-crumb").forEach((crumb, index) => {
-    crumb.classList.remove("rescued");
-    crumb.textContent = ["🍎", "🍞", "🧀"][index];
-  });
+  showScreen("rescue");
 
   rescued = 0;
 
   $("rescuedCount").textContent = "0";
   $("rescueBar").style.width = "0%";
-  $("rescueContinue").disabled = true;
-
   $("rescueMessage").textContent =
-    "Move your finger over each crumb to rescue it.";
+    "Передвигай щётку пальцем и собирай кусочки еды!";
+  $("rescueContinue").classList.add("hidden");
 
-  brush.style.left = "8px";
-  brush.style.top = "8px";
+  const crumbs = document.querySelectorAll(".crumb");
 
-  showScreen("rescue");
+  crumbs.forEach((crumb, index) => {
+    crumb.classList.remove("hidden");
+    crumb.style.display = "block";
+    crumb.style.opacity = "1";
+
+    const positions = [
+      { left: "27%", top: "45%" },
+      { left: "49%", top: "62%" },
+      { left: "68%", top: "40%" }
+    ];
+
+    crumb.style.left = positions[index].left;
+    crumb.style.top = positions[index].top;
+  });
+
+  $("movingBrush").style.left = "20px";
+  $("movingBrush").style.top = "15px";
 }
 
-function moveBrush(event) {
-  const rect = mouth.getBoundingClientRect();
+function collectCrumb(crumb) {
+  if (crumb.dataset.collected === "yes") return;
 
-  const x = Math.max(
-    0,
-    Math.min(rect.width - 45, event.clientX - rect.left - 22)
-  );
+  crumb.dataset.collected = "yes";
+  crumb.style.display = "none";
 
-  const y = Math.max(
-    0,
-    Math.min(rect.height - 45, event.clientY - rect.top - 22)
-  );
+  rescued++;
 
-  brush.style.left = x + "px";
-  brush.style.top = y + "px";
-
-  document.querySelectorAll(".food-crumb:not(.rescued)").forEach(crumb => {
-    const crumbRect = crumb.getBoundingClientRect();
-    const brushRect = brush.getBoundingClientRect();
-
-    const hit = !(
-      brushRect.right < crumbRect.left ||
-      brushRect.left > crumbRect.right ||
-      brushRect.bottom < crumbRect.top ||
-      brushRect.top > crumbRect.bottom
-    );
-
-    if (hit) {
-      crumb.classList.add("rescued");
-      rescued++;
-
-      $("rescuedCount").textContent = rescued;
-      $("rescueBar").style.width = (rescued / 3 * 100) + "%";
-    }
-  });
+  $("rescuedCount").textContent = rescued;
+  $("rescueBar").style.width = (rescued / 3 * 100) + "%";
 
   if (rescued === 3) {
     $("rescueMessage").textContent =
-      "Wonderful! All the snack pieces are rescued!";
+      "УРА! Все кусочки спасены! Зубки чистые! ✨";
 
-    $("rescueContinue").disabled = false;
+    $("rescueContinue").classList.remove("hidden");
+  } else {
+    $("rescueMessage").textContent =
+      "Отлично! Продолжай спасать еду! 💗";
   }
 }
 
-mouth.addEventListener("pointerdown", event => {
-  brushing = true;
-  mouth.setPointerCapture(event.pointerId);
-  moveBrush(event);
-  event.preventDefault();
-});
+const brush = $("movingBrush");
+const mouth = $("mouthGame");
 
-mouth.addEventListener("pointermove", event => {
-  if (brushing) moveBrush(event);
-});
+if (brush && mouth) {
+  brush.addEventListener("pointerdown", event => {
+    brushMoving = true;
+    brush.setPointerCapture(event.pointerId);
+  });
 
-mouth.addEventListener("pointerup", () => {
-  brushing = false;
-});
+  brush.addEventListener("pointerup", () => {
+    brushMoving = false;
+  });
 
-mouth.addEventListener("pointercancel", () => {
-  brushing = false;
-});
+  brush.addEventListener("pointercancel", () => {
+    brushMoving = false;
+  });
+
+  brush.addEventListener("pointermove", event => {
+    if (!brushMoving) return;
+
+    const rect = mouth.getBoundingClientRect();
+
+    let x = event.clientX - rect.left - 25;
+    let y = event.clientY - rect.top - 25;
+
+    x = Math.max(0, Math.min(x, rect.width - 55));
+    y = Math.max(0, Math.min(y, rect.height - 55));
+
+    brush.style.left = x + "px";
+    brush.style.top = y + "px";
+
+    const brushRect = brush.getBoundingClientRect();
+
+    document.querySelectorAll(".crumb").forEach(crumb => {
+      if (crumb.style.display === "none") return;
+
+      const crumbRect = crumb.getBoundingClientRect();
+
+      const touching =
+        brushRect.left < crumbRect.right &&
+        brushRect.right > crumbRect.left &&
+        brushRect.top < crumbRect.bottom &&
+        brushRect.bottom > crumbRect.top;
+
+      if (touching) {
+        collectCrumb(crumb);
+      }
+    });
+  });
+}
 
 function finishRescue() {
-  data.coins += 15;
-  save();
-
-  $("eatingAvatar").classList.remove("chewing");
-
+  addCoins(15);
+  alert("Ты получил(а) 15 монет! 🪙");
   showScreen("world");
 }
 
-/* TOOTH ACADEMY */
+/* =====================================
+   DENTAL ANATOMY ACADEMY
+===================================== */
 
-const anatomyInfo = {
-  Lips: [
-    "Lips",
-    "Your lips help keep food in your mouth and help you speak and smile."
-  ],
-  Gums: [
-    "Gums",
-    "Gums are the soft pink tissue that support and protect your teeth."
-  ],
-  Teeth: [
-    "Teeth",
-    "Incisors cut, canines tear, and molars help grind food into smaller pieces."
-  ],
-  Tongue: [
-    "Tongue",
-    "Your tongue moves food around, helps you taste, and helps you speak."
-  ]
+const anatomyDescriptions = {
+  "Резцы": "Резцы — передние зубы. Они помогают откусывать пищу. У взрослого человека обычно 8 резцов.",
+  "Клыки": "Клыки — заострённые зубы рядом с резцами. Они помогают отрывать и удерживать пищу. У взрослого обычно 4 клыка.",
+  "Малые коренные": "Малые коренные зубы находятся за клыками. Они помогают раздавливать и пережёвывать пищу. У взрослого обычно 8 таких зубов.",
+  "Большие коренные": "Большие коренные зубы расположены дальше всех. Их широкая поверхность помогает тщательно пережёвывать пищу. У взрослого обычно 12 больших коренных зубов, включая зубы мудрости.",
+  "Дёсны": "Дёсны — мягкая ткань вокруг зубов. Они помогают удерживать и защищать зубы.",
+  "Язык": "Язык помогает чувствовать вкус, перемещать пищу и участвует в речи.",
+  "Губы": "Губы помогают удерживать пищу во рту, говорить и выражать эмоции.",
+  "Нёбо": "Нёбо образует верхнюю часть полости рта. Оно разделяет полость рта и носовую полость."
 };
 
-let selectedPiece = null;
-let placedLabels = new Set();
-
-document.querySelectorAll(".hotspot").forEach(hotspot => {
-  hotspot.addEventListener("click", () => {
-    showAnatomy(hotspot.dataset.part);
-  });
-});
-
-function showAnatomy(part) {
-  const [title, description] = anatomyInfo[part];
-
-  $("anatomyInfo").innerHTML =
-    `<b>${title}</b><p>${description}</p>`;
-
-  if (selectedPiece) {
-    if (selectedPiece === part) {
-      placedLabels.add(part);
-
-      const button = document.querySelector(
-        `.puzzle-piece[data-answer="${part}"]`
-      );
-
-      button.classList.add("placed");
-      button.classList.remove("selected");
-      button.disabled = true;
-
-      $("puzzleFeedback").textContent =
-        `Correct! ${part} is in the right place.`;
-
-      selectedPiece = null;
-
-      document.querySelectorAll(".puzzle-piece").forEach(button => {
-        button.classList.remove("selected");
-      });
-
-      if (placedLabels.size === 4) {
-        $("puzzleFeedback").textContent =
-          "Amazing! You completed the mouth puzzle! +20 coins";
-
-        data.coins += 20;
-        save();
-      }
-    } else {
-      $("puzzleFeedback").textContent =
-        "Not quite. Try another numbered area.";
-    }
-  }
+function showPart(part) {
+  $("anatomyInfo").innerHTML = `
+    <h3>${part}</h3>
+    <p>${anatomyDescriptions[part] || "Изучай строение полости рта!"}</p>
+  `;
 }
 
-document.querySelectorAll(".puzzle-piece").forEach(button => {
-  button.addEventListener("click", () => {
-    if (button.disabled) return;
-
-    selectedPiece = button.dataset.answer;
-
-    document.querySelectorAll(".puzzle-piece").forEach(item => {
-      item.classList.toggle("selected", item === button);
-    });
-
-    $("puzzleFeedback").textContent =
-      `Now tap the ${selectedPiece.toLowerCase()} area in the illustration.`;
+document.querySelectorAll(".tooth").forEach(tooth => {
+  tooth.addEventListener("click", () => {
+    showPart(tooth.dataset.part);
   });
 });
 
-/* MY ROOM */
+function showAcademyTab(tab) {
+  $("jawTab").classList.toggle("hidden", tab !== "jaw");
+  $("toolsTab").classList.toggle("hidden", tab !== "tools");
+}
+
+function showTool(name, description) {
+  $("toolInfo").innerHTML = `
+    <h3>${name}</h3>
+    <p>${description}</p>
+  `;
+}
+
+/* =====================================
+   ROOM SHOP CATALOG
+===================================== */
 
 const catalog = {
   furniture: [
-    { id: "bed", name: "Cloud bed", icon: "🛏️", price: 35 },
-    { id: "sofa", name: "Cozy sofa", icon: "🛋️", price: 30 },
-    { id: "desk", name: "Study desk", icon: "🪑", price: 25 },
-    { id: "lamp", name: "Moon lamp", icon: "💡", price: 15 },
-    { id: "bookcase", name: "Bookcase", icon: "📚", price: 25 },
-    { id: "rug", name: "Soft rug", icon: "🟣", price: 20 }
+    ["Кровать", "🛏️", 35],
+    ["Двуспальная кровать", "🛌", 55],
+    ["Диван", "🛋️", 45],
+    ["Кресло", "💺", 25],
+    ["Стол", "🪑", 25],
+    ["Обеденный стол", "🍽️", 45],
+    ["Стул", "🪑", 15],
+    ["Шкаф", "🚪", 40],
+    ["Комод", "🗄️", 35],
+    ["Книжная полка", "📚", 25],
+    ["Тумбочка", "🗃️", 20],
+    ["Письменный стол", "🖥️", 45],
+    ["Холодильник", "🧊", 55],
+    ["Плита", "🍳", 50],
+    ["Кухонная раковина", "🚰", 35],
+    ["Кухонные шкафы", "🗄️", 40],
+    ["Ванна", "🛁", 60],
+    ["Душ", "🚿", 50],
+    ["Зеркало", "🪞", 25],
+    ["Раковина для ванной", "🚰", 35],
+    ["Телевизор", "📺", 65],
+    ["Киноэкран", "🎬", 80],
+    ["Кресло для кино", "💺", 35],
+    ["Попкорн-машина", "🍿", 45],
+    ["Игровой стол", "🎮", 60],
+    ["Пианино", "🎹", 70],
+    ["Ковёр", "🧶", 20],
+    ["Напольная лампа", "💡", 20]
   ],
 
   decor: [
-    { id: "plant", name: "Little plant", icon: "🪴", price: 12 },
-    { id: "picture", name: "Wall art", icon: "🖼️", price: 18 },
-    { id: "teddy", name: "Teddy bear", icon: "🧸", price: 20 },
-    { id: "star", name: "Star cushion", icon: "⭐", price: 10 },
-    { id: "clock", name: "Cute clock", icon: "🕒", price: 14 }
+    ["Комнатное растение", "🪴", 15],
+    ["Цветочная ваза", "💐", 20],
+    ["Картина", "🖼️", 25],
+    ["Настенные часы", "🕰️", 20],
+    ["Настольная лампа", "🛋️", 15],
+    ["Плюшевый мишка", "🧸", 20],
+    ["Кукла", "🎎", 25],
+    ["Игрушечный домик", "🏠", 35],
+    ["Глобус", "🌎", 20],
+    ["Книги", "📚", 15],
+    ["Свеча", "🕯️", 10],
+    ["Подушки", "🛏️", 15],
+    ["Звёздный светильник", "🌟", 30],
+    ["Аквариум", "🐠", 45],
+    ["Настенный декор", "🪄", 20],
+    ["Будильник", "⏰", 15]
+  ],
+
+  garden: [
+    ["Роза", "🌹", 15],
+    ["Тюльпан", "🌷", 12],
+    ["Подсолнух", "🌻", 15],
+    ["Ромашка", "🌼", 10],
+    ["Цветочный куст", "🌺", 20],
+    ["Кактус", "🌵", 12],
+    ["Пальма", "🌴", 35],
+    ["Яблоня", "🌳", 45],
+    ["Сосна", "🌲", 35],
+    ["Куст роз", "🥀", 25],
+    ["Горшок с цветами", "🪴", 20],
+    ["Садовая скамейка", "🪑", 30],
+    ["Садовый фонарь", "🏮", 25],
+    ["Гирлянда", "✨", 30],
+    ["Качели", "🎠", 65],
+    ["Карусель", "🎡", 100],
+    ["Пруд", "💧", 55],
+    ["Фонтан", "⛲", 75],
+    ["Садовый столик", "🍵", 30],
+    ["Садовый зонт", "⛱️", 35],
+    ["Гамак", "🛏️", 40],
+    ["Птичий домик", "🐦", 20],
+    ["Садовая дорожка", "🪨", 20],
+    ["Бабочки", "🦋", 15],
+    ["Садовый гном", "🧙", 25],
+    ["Качалка", "🛝", 55],
+    ["Качели-балансир", "🎠", 50],
+    ["Детская горка", "🛝", 55]
   ],
 
   wall: [
-    {
-      id: "wallpink",
-      name: "Blush walls",
-      icon: "🌸",
-      price: 20,
-      color: "#f4dfe9"
-    },
-    {
-      id: "wallmint",
-      name: "Mint walls",
-      icon: "🌿",
-      price: 20,
-      color: "#e0f0e8"
-    },
-    {
-      id: "wallsky",
-      name: "Sky walls",
-      icon: "☁️",
-      price: 20,
-      color: "#e2edf7"
-    },
-    {
-      id: "walllilac",
-      name: "Lilac walls",
-      icon: "💜",
-      price: 20,
-      color: "#ece4f5"
-    }
+    ["Нежно-розовые стены", "#f6dfe6", 10],
+    ["Лавандовые стены", "#e8e0fa", 10],
+    ["Мятные стены", "#d9f0e2", 10],
+    ["Голубые стены", "#dcecf9", 10],
+    ["Персиковые стены", "#fbe2d2", 10],
+    ["Кремовые стены", "#fff0d5", 10],
+    ["Небесные стены", "#cce6f5", 15],
+    ["Сиреневые стены", "#d8c7ed", 15],
+    ["Зелёные стены", "#dce9c9", 15],
+    ["Звёздные стены", "#d9d2f5", 20]
+  ],
+
+  rooms: [
+    ["Кухня", "🍳", 100],
+    ["Гостиная", "🛋️", 100],
+    ["Детская", "🧸", 120],
+    ["Ванная", "🛁", 100],
+    ["Кинотеатр", "🎬", 180],
+    ["Игровая", "🎮", 140],
+    ["Сад", "🌷", 150]
   ]
 };
 
-let activeShop = "furniture";
+let selectedShopCategory = "furniture";
+let selectedRoomItem = null;
 
 function openRoom() {
   showScreen("room");
   renderRoom();
-
-  showShop(
-    "furniture",
-    document.querySelector(".tab")
-  );
+  showShop("furniture");
 }
 
-function showShop(category, button) {
-  activeShop = category;
+function showShop(category) {
+  selectedShopCategory = category;
 
-  document.querySelectorAll(".tab").forEach(tab => {
-    tab.classList.remove("active");
+  document.querySelectorAll(".room-tabs button").forEach(button => {
+    button.style.background = "white";
   });
 
-  if (button) button.classList.add("active");
+  const buttons = document.querySelectorAll(".room-tabs button");
+  const categories = ["furniture", "decor", "wall", "garden", "rooms"];
+  const index = categories.indexOf(category);
 
+  if (buttons[index]) {
+    buttons[index].style.background = "#f5e5f1";
+  }
+
+  renderShop();
+}
+
+function renderShop() {
   const grid = $("shopGrid");
   grid.innerHTML = "";
 
-  if (category === "inventory") {
-    const ownedItems = catalog.furniture
-      .concat(catalog.decor)
-      .filter(item => data.owned.includes(item.id));
+  const items = catalog[selectedShopCategory] || [];
 
-    if (!ownedItems.length) {
-      grid.innerHTML = "<p>You haven't bought any furniture yet.</p>";
-    }
+  items.forEach((item, index) => {
+    const [name, emoji, price] = item;
 
-    ownedItems.forEach(item => {
-      grid.appendChild(shopCard(item, true));
+    const card = document.createElement("div");
+    card.className = "shop-item";
+
+    const alreadyOwned =
+      data.inventory.includes(name) ||
+      (selectedShopCategory === "rooms" &&
+       data.unlockedRooms.includes(name));
+
+    card.innerHTML = `
+      <div class="item-emoji">${emoji}</div>
+      <strong>${name}</strong>
+      <p>🪙 ${price}</p>
+      <button>${alreadyOwned ? "Уже куплено" : "Купить"}</button>
+    `;
+
+    card.querySelector("button").disabled = alreadyOwned;
+    card.querySelector("button").style.opacity =
+      alreadyOwned ? ".5" : "1";
+
+    card.querySelector("button").addEventListener("click", () => {
+      buyItem(selectedShopCategory, index);
     });
 
-    return;
-  }
-
-  (catalog[category] || []).forEach(item => {
-    grid.appendChild(shopCard(item, false));
+    grid.appendChild(card);
   });
 }
 
-function shopCard(item, inventory) {
-  const card = document.createElement("div");
-  card.className = "shop-item";
+function buyItem(category, index) {
+  const item = catalog[category][index];
+  const [name, value, price] = item;
 
-  const owned = data.owned.includes(item.id);
-
-  card.innerHTML = `
-    <div class="item-icon">${item.icon}</div>
-    <b>${item.name}</b>
-    <small>${inventory ? "Ready to place" : `🪙 ${item.price}`}</small>
-  `;
-
-  const button = document.createElement("button");
-
-  button.textContent = inventory
-    ? "Place in room"
-    : owned
-      ? "Owned"
-      : "Buy";
-
-  button.disabled = !inventory && owned;
-
-  button.addEventListener("click", () => {
-    if (inventory) {
-      placeItem(item.id);
-    } else {
-      buyItem(item);
-    }
-  });
-
-  card.appendChild(button);
-
-  return card;
-}
-
-function buyItem(item) {
-  if (data.owned.includes(item.id)) return;
-
-  if (data.coins < item.price) {
+  if (data.coins < price) {
     $("shopMessage").textContent =
-      "Not enough coins yet. Complete an adventure to earn more.";
-
+      "Пока не хватает монет. Играй и зарабатывай! ⭐";
     return;
   }
 
-  data.coins -= item.price;
-  data.owned.push(item.id);
+  if (category === "rooms") {
+    if (data.unlockedRooms.includes(name)) return;
 
-  if (item.color) data.wallColor = item.color;
+    data.coins -= price;
+    data.unlockedRooms.push(name);
+    data.currentRoom = name;
 
-  save();
+    if (!data.roomItems[name]) {
+      data.roomItems[name] = [];
+    }
 
-  $("shopMessage").textContent =
-    `You bought ${item.name}! Open My items to place it.`;
+    if (!data.wallColors[name]) {
+      data.wallColors[name] = "#f6dfe6";
+    }
 
-  showShop(
-    activeShop,
-    document.querySelector(".tab.active")
-  );
-}
+    saveData();
+    renderRoom();
+    renderShop();
 
-function placeItem(id) {
-  if (!data.owned.includes(id)) return;
+    $("shopMessage").textContent =
+      "Поздравляем! Ты открыл(а) комнату: " + name + " 🎉";
+    return;
+  }
 
-  const item = [...catalog.furniture, ...catalog.decor]
-    .find(item => item.id === id);
+  if (category === "wall") {
+    data.coins -= price;
+    data.wallColors[data.currentRoom] = value;
 
-  if (!item) return;
+    saveData();
+    renderRoom();
+    $("shopMessage").textContent =
+      "Цвет стен изменён! 🎨";
+    return;
+  }
 
-  data.placed.push({
-    id,
-    x: 25 + Math.random() * 50,
-    y: 45 + Math.random() * 35
+  if (data.inventory.includes(name)) {
+    $("shopMessage").textContent = "Этот предмет уже куплен!";
+    return;
+  }
+
+  data.coins -= price;
+  data.inventory.push(name);
+
+  if (!data.roomItems[data.currentRoom]) {
+    data.roomItems[data.currentRoom] = [];
+  }
+
+  data.roomItems[data.currentRoom].push({
+    name,
+    emoji: value,
+    x: 45 + Math.random() * 100,
+    y: 150 + Math.random() * 100,
+    size: 100
   });
 
-  save();
+  saveData();
   renderRoom();
+  renderShop();
 
   $("shopMessage").textContent =
-    `${item.name} placed! Drag it to move it.`;
+    "Ты купил(а): " + name + "! Теперь расставь его в комнате. 💗";
+}
+
+/* =====================================
+   ROOM DECORATING AND ITEM MOVEMENT
+===================================== */
+
+function currentRoomItems() {
+  if (!data.roomItems[data.currentRoom]) {
+    data.roomItems[data.currentRoom] = [];
+  }
+
+  return data.roomItems[data.currentRoom];
 }
 
 function renderRoom() {
-  if (data.wallColor) {
-    $("roomStage").style.background =
-      `linear-gradient(${data.wallColor} 0 72%,#d7c1b3 72% 100%)`;
+  const stage = $("roomStage");
+  const container = $("roomItems");
+
+  if (!stage || !container) return;
+
+  const backgrounds = {
+    "Спальня": "#f6dfe6",
+    "Кухня": "#e5f0e6",
+    "Гостиная": "#e8e0fa",
+    "Детская": "#fce8ca",
+    "Ванная": "#dcecf9",
+    "Кинотеатр": "#d6c9e8",
+    "Игровая": "#e4e4fa",
+    "Сад": "#d9f0e2"
+  };
+
+  stage.style.background =
+    backgrounds[data.currentRoom] || "#f6dfe6";
+
+  const wallColor =
+    data.wallColors[data.currentRoom] ||
+    backgrounds[data.currentRoom] ||
+    "#f6dfe6";
+
+  if (data.currentRoom !== "Сад") {
+    stage.style.background =
+      `linear-gradient(to bottom, ${wallColor} 0 65%, #d9bda4 65% 100%)`;
+  } else {
+    stage.style.background =
+      "linear-gradient(to bottom, #cce9f7 0 45%, #9ccf91 45% 100%)";
   }
 
-  const container = $("roomItems");
   container.innerHTML = "";
 
-  data.placed.forEach(placed => {
-    const item = [...catalog.furniture, ...catalog.decor]
-      .find(item => item.id === placed.id);
-
-    if (!item) return;
-
+  currentRoomItems().forEach((item, index) => {
     const element = document.createElement("div");
 
-    element.className = "placed-item";
-    element.textContent = item.icon;
-    element.style.left = placed.x + "%";
-    element.style.top = placed.y + "%";
-    element.title = "Drag to move";
+    element.className = "room-item";
+    element.textContent = item.emoji;
+    element.style.left = item.x + "px";
+    element.style.top = item.y + "px";
+    element.style.fontSize = (55 * item.size / 100) + "px";
+
+    if (selectedRoomItem === index) {
+      element.classList.add("selected");
+    }
 
     element.addEventListener("pointerdown", event => {
-      event.preventDefault();
+      if (event.target !== element) return;
+
+      selectedRoomItem = index;
+
+      const rect = stage.getBoundingClientRect();
+      const offsetX = event.clientX - rect.left - item.x;
+      const offsetY = event.clientY - rect.top - item.y;
 
       element.setPointerCapture(event.pointerId);
 
-      const rect = $("roomStage").getBoundingClientRect();
+      function moveItem(moveEvent) {
+        const x = moveEvent.clientX - rect.left - offsetX;
+        const y = moveEvent.clientY - rect.top - offsetY;
 
-      const move = moveEvent => {
-        placed.x = Math.max(
-          5,
-          Math.min(95, (moveEvent.clientX - rect.left) / rect.width * 100)
-        );
+        item.x = Math.max(0, Math.min(x, rect.width - 45));
+        item.y = Math.max(0, Math.min(y, rect.height - 45));
 
-        placed.y = Math.max(
-          10,
-          Math.min(90, (moveEvent.clientY - rect.top) / rect.height * 100)
-        );
+        element.style.left = item.x + "px";
+        element.style.top = item.y + "px";
+      }
 
-        element.style.left = placed.x + "%";
-        element.style.top = placed.y + "%";
-      };
+      function stopMoving() {
+        element.removeEventListener("pointermove", moveItem);
+        element.removeEventListener("pointerup", stopMoving);
+        element.removeEventListener("pointercancel", stopMoving);
 
-      const up = () => {
-        element.removeEventListener("pointermove", move);
-        element.removeEventListener("pointerup", up);
-        save();
-      };
+        saveData();
+        renderRoom();
+      }
 
-      element.addEventListener("pointermove", move);
-      element.addEventListener("pointerup", up);
+      element.addEventListener("pointermove", moveItem);
+      element.addEventListener("pointerup", stopMoving);
+      element.addEventListener("pointercancel", stopMoving);
+    });
+
+    element.addEventListener("click", () => {
+      selectedRoomItem = index;
+      $("itemSize").value = item.size;
+      renderRoom();
     });
 
     container.appendChild(element);
   });
 }
 
-/* DAILY STREAKS AND TIMERS */
+$("itemSize").addEventListener("input", event => {
+  if (selectedRoomItem === null) return;
 
-let timer = null;
-let activeSession = null;
-let remaining = 120;
+  const item = currentRoomItems()[selectedRoomItem];
 
-function todayKey() {
-  return new Date().toISOString().slice(0, 10);
+  if (!item) return;
+
+  item.size = Number(event.target.value);
+
+  renderRoom();
+  saveData();
+});
+
+/* =====================================
+   MORNING AND EVENING TOOTHBRUSH TIMER
+===================================== */
+
+let activeTimer = null;
+let timerInterval = null;
+let secondsLeft = 120;
+
+function localDateKey() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
-function openStreaks() {
-  showScreen("streaks");
-  updateStreakUI();
+function formatTime(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const remaining = seconds % 60;
+
+  return String(minutes).padStart(2, "0") + ":" +
+    String(remaining).padStart(2, "0");
 }
 
-function updateStreakUI() {
-  $("streakDays").textContent = data.streak;
-
-  const today = todayKey();
-
-  $("morningState").textContent =
-    data.morningDone === today
-      ? "Completed today ✓"
-      : "Ready when you are";
-
-  $("eveningState").textContent =
-    data.eveningDone === today
-      ? "Completed today ✓"
-      : "Ready when you are";
-
-  $("morningStart").disabled =
-    data.morningDone === today || !!activeSession;
-
-  $("eveningStart").disabled =
-    data.eveningDone === today || !!activeSession;
-}
-
-function startTimer(session) {
-  if (activeSession) {
+function startTimer(type) {
+  if (activeTimer) {
     $("timerMessage").textContent =
-      "A timer is already running. Finish or cancel it first.";
-
+      "Сначала закончи текущую чистку! 🪥";
     return;
   }
 
-  const today = todayKey();
+  const today = localDateKey();
+  const completed =
+    type === "morning" ? data.morningDone : data.eveningDone;
 
-  if (
-    (session === "morning" ? data.morningDone : data.eveningDone) === today
-  ) {
+  if (completed === today) {
+    $("timerMessage").textContent =
+      "Ты уже выполнил(а) эту чистку сегодня! ⭐";
     return;
   }
 
-  activeSession = session;
-  remaining = 120;
+  activeTimer = type;
+  secondsLeft = 120;
 
   $("timerMessage").textContent =
-    `${session === "morning" ? "Morning" : "Evening"} brushing is in progress. Keep going!`;
+    "Отлично! Чистим зубки целых две минуты!";
 
   $("stopTimer").classList.remove("hidden");
 
-  updateTimerDisplay();
-  updateStreakUI();
+  $("morningStart").disabled = true;
+  $("eveningStart").disabled = true;
 
-  timer = setInterval(() => {
-    remaining--;
+  updateTimerDisplay();
+
+  timerInterval = setInterval(() => {
+    secondsLeft--;
     updateTimerDisplay();
 
-    if (remaining <= 0) {
+    if (secondsLeft <= 0) {
       completeTimer();
     }
   }, 1000);
 }
 
 function updateTimerDisplay() {
-  const minutes = String(Math.floor(remaining / 60)).padStart(2, "0");
-  const seconds = String(remaining % 60).padStart(2, "0");
+  const display =
+    activeTimer === "morning" ? $("morningTime") : $("eveningTime");
 
-  $(activeSession === "morning" ? "morningTime" : "eveningTime")
-    .textContent = `${minutes}:${seconds}`;
-}
-
-function stopTimer() {
-  if (timer) clearInterval(timer);
-
-  timer = null;
-
-  const previous = activeSession;
-  activeSession = null;
-
-  if (previous) {
-    $(previous === "morning" ? "morningTime" : "eveningTime")
-      .textContent = "02:00";
+  if (display) {
+    display.textContent = formatTime(secondsLeft);
   }
-
-  $("stopTimer").classList.add("hidden");
-
-  $("timerMessage").textContent =
-    "Timer cancelled. You can start again when ready.";
-
-  updateStreakUI();
 }
 
 function completeTimer() {
-  clearInterval(timer);
-  timer = null;
+  clearInterval(timerInterval);
+  timerInterval = null;
 
-  const today = todayKey();
+  const today = localDateKey();
 
-  if (activeSession === "morning") {
+  if (activeTimer === "morning") {
     data.morningDone = today;
+    $("morningState").textContent = "Выполнено! 🌞";
   } else {
     data.eveningDone = today;
+    $("eveningState").textContent = "Выполнено! 🌙";
   }
 
-  const finished = activeSession;
-  activeSession = null;
+  addCoins(10);
 
-  const both =
-    data.morningDone === today &&
-    data.eveningDone === today;
-
-  if (both && data.lastCompleted !== today) {
+  if (data.morningDone === today && data.eveningDone === today) {
     data.streak++;
-    data.lastCompleted = today;
-    data.coins += 30;
-  } else {
-    data.coins += 10;
+    addCoins(10);
+    $("streakDays").textContent =
+      "🔥 " + data.streak + " дней! Обе чистки выполнены!";
   }
 
-  save();
+  activeTimer = null;
 
-  $(finished === "morning" ? "morningTime" : "eveningTime")
-    .textContent = "02:00";
+  $("timerMessage").textContent =
+    "Прекрасная работа! Ты получил(а) монетки! 🪙";
+
+  $("stopTimer").classList.add("hidden");
+
+  $("morningStart").disabled = false;
+  $("eveningStart").disabled = false;
+
+  saveData();
+  updateTimerButtons();
+}
+
+function stopTimer() {
+  if (!activeTimer) return;
+
+  clearInterval(timerInterval);
+  timerInterval = null;
+
+  activeTimer = null;
+  secondsLeft = 120;
+
+  $("morningTime").textContent = "02:00";
+  $("eveningTime").textContent = "02:00";
+
+  $("morningStart").disabled = false;
+  $("eveningStart").disabled = false;
 
   $("stopTimer").classList.add("hidden");
 
   $("timerMessage").textContent =
-    "Wonderful work! Your brushing session is complete.";
+    "Таймер остановлен. Попробуй ещё раз!";
 
-  updateStreakUI();
+  updateTimerButtons();
 }
 
-/* INITIALIZE */
+function updateTimerButtons() {
+  const today = localDateKey();
 
-updateHeader();
+  $("morningStart").disabled =
+    data.morningDone === today || activeTimer !== null;
 
-if (data.name) {
-  $("playerName").textContent = data.name;
-  $("avatarGreeting").textContent = data.name + "'s smile buddy";
-  $("avatarFace").style.background = data.color;
+  $("eveningStart").disabled =
+    data.eveningDone === today || activeTimer !== null;
+}
 
-  showScreen("world");
-} else {
+/* =====================================
+   STARTUP
+===================================== */
+
+updateWallet();
+updateTimerButtons();
+loadProfile();
+
+/* Кнопка спасения сначала ведёт к перекусу */
+const rescueCard = document.querySelector(".feature-card");
+
+if (rescueCard) {
+  rescueCard.onclick = () => showScreen("snack");
+}
+
+/* Если профиль ещё не создан, показываем приветствие */
+if (!data.name) {
   showScreen("home");
 }
