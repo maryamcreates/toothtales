@@ -3,285 +3,286 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToothTales 🦷</title>
+  <title>ToothTales 🦷✨</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+  <!-- HEADER -->
   <header>
-    <h2>🦷 ToothTales</h2>
-    <p>Little smiles, big adventures!</p>
-  </header>
-
-  <!-- SIDEBAR INSTRUCTION DRAWER (Вкладочка с инструкцией по 14 пунктам) -->
-  <div id="sideDrawer" class="side-drawer">
-    <button id="drawerToggle" onclick="toggleDrawer()">📖 Guide ✨</button>
-    <div class="drawer-content">
-      <h3>🌟 Brushing Steps</h3>
-      <ul id="drawerStepsList"></ul>
+    <div class="header-inner">
+      <h2>🦷 ToothTales</h2>
+      <div class="header-stats" id="headerStats" style="display: none;">
+        <span>🪙 <span id="globalCoins">0</span></span>
+        <span>🔥 <span id="globalStreak">0</span> Days</span>
+      </div>
     </div>
-  </div>
-
-  <!-- FAIRY HELPER BUTTON (Фея-подсказка) -->
-  <div id="fairyHelper" class="fairy-helper" onclick="showFairyHint()">
-    <span class="fairy-icon">🧚‍♀️✨</span>
-    <span class="fairy-bubble-hint" id="fairyHintText">Need help, hero? Tap me! 💕</span>
-  </div>
+  </header>
 
   <main id="app">
 
-    <!-- WELCOME SCREEN -->
-    <section id="welcomeScreen">
-      <div class="tooth">🦷</div>
-      <h1>Let's make brushing magical!</h1>
-      <p>Join our little tooth friend on a journey to healthy and happy smiles!</p>
-      <button id="startButton">Start my adventure! 🚀</button>
+    <!-- 1. WELCOME SCREEN -->
+    <section id="welcomeScreen" class="screen">
+      <div class="fairy-welcome">🧚‍♀️✨</div>
+      <div class="tooth-bounce">🦷</div>
+      <h1>Welcome to ToothTales!</h1>
+      <p>Let's make brushing magical, healthy, and fun!</p>
+      <button class="magical-btn" id="startAdventureBtn">Start my adventure! 🚀</button>
     </section>
 
-    <!-- PROFILE SCREEN -->
-    <section id="profileScreen" class="hidden">
-      <div class="fairy">🧚‍♀️</div>
-      <h1>Welcome, little explorer!</h1>
-      <p>First, tell us a little about yourself.</p>
+    <!-- 2. PROFILE & CREATOR SCREEN -->
+    <section id="profileScreen" class="screen hidden">
+      <div class="fairy-float">🧚‍♀️</div>
+      <h1>Hello, little explorer!</h1>
+      <p>Tell us a bit about yourself and create your character.</p>
 
       <form id="profileForm">
-        <label for="childName">What's your name?</label>
-        <input id="childName" type="text" maxlength="16" placeholder="Your name..." required>
+        <div class="form-group">
+          <label for="childName">What is your name?</label>
+          <input id="childName" type="text" maxlength="16" placeholder="Your name..." required>
+        </div>
 
-        <label for="childAge">How old are you?</label>
-        <select id="childAge" required>
-          <option value="">Choose your age</option>
-          <option value="3">3 years old</option>
-          <option value="4">4 years old</option>
-          <option value="5">5 years old</option>
-          <option value="6">6 years old</option>
-          <option value="7">7 years old</option>
-          <option value="8">8 years old</option>
-        </select>
+        <div class="form-group">
+          <label for="childAge">How old are you?</label>
+          <select id="childAge" required>
+            <option value="">Choose your age</option>
+            <option value="3">3 years old</option>
+            <option value="4">4 years old</option>
+            <option value="5">5 years old</option>
+            <option value="6">6 years old</option>
+            <option value="7">7 years old</option>
+            <option value="8">8 years old</option>
+          </select>
+        </div>
 
-        <button type="submit">Let's create my character! ✨</button>
+        <!-- CHARACTER CREATOR PREVIEW -->
+        <h3>Design your character! ✨</h3>
+        <div class="avatar" id="avatar">
+          <div class="avatar-hair"></div>
+          <div class="avatar-head">
+            <div class="eyes"><span></span><span></span></div>
+            <div class="smile"></div>
+          </div>
+          <div class="avatar-body"></div>
+          <div class="avatar-shorts"></div>
+          <div class="avatar-legs"><span></span><span></span></div>
+        </div>
+
+        <div class="creator-options">
+          <p>Skin color</p>
+          <div class="choices">
+            <button type="button" class="color-choice skin active" data-group="skin" data-color="#f5c7a5" style="background:#f5c7a5"></button>
+            <button type="button" class="color-choice skin" data-group="skin" data-color="#dfaa7c" style="background:#dfaa7c"></button>
+            <button type="button" class="color-choice skin" data-group="skin" data-color="#bd805b" style="background:#bd805b"></button>
+            <button type="button" class="color-choice skin" data-group="skin" data-color="#875638" style="background:#875638"></button>
+          </div>
+
+          <p>Hair color</p>
+          <div class="choices">
+            <button type="button" class="color-choice active" data-group="hair" data-color="#593b2e" style="background:#593b2e"></button>
+            <button type="button" class="color-choice" data-group="hair" data-color="#241b19" style="background:#241b19"></button>
+            <button type="button" class="color-choice" data-group="hair" data-color="#d6a15e" style="background:#d6a15e"></button>
+            <button type="button" class="color-choice" data-group="hair" data-color="#c66c4e" style="background:#c66c4e"></button>
+          </div>
+
+          <p>Eye color</p>
+          <div class="choices">
+            <button type="button" class="color-choice active" data-group="eyes" data-color="#65432d" style="background:#65432d"></button>
+            <button type="button" class="color-choice" data-group="eyes" data-color="#4389b9" style="background:#4389b9"></button>
+            <button type="button" class="color-choice" data-group="eyes" data-color="#4b9562" style="background:#4b9562"></button>
+          </div>
+
+          <p>Outfit</p>
+          <div class="outfit-choices">
+            <button type="button" class="outfit-choice active" data-outfit="shirt">👕 Shirt & Shorts</button>
+            <button type="button" class="outfit-choice" data-outfit="dress">👗 Dress</button>
+          </div>
+        </div>
+
+        <button type="submit" class="magical-btn">Let's go to ToothTales World! ✨</button>
       </form>
     </section>
 
-    <!-- CHARACTER CREATOR -->
-    <section id="creatorScreen" class="hidden">
-      <div class="fairy">🧚‍♀️</div>
-      <h1>Meet your new friend!</h1>
-      <p>Let's make a character that looks just like you!</p>
-
-      <div class="avatar" id="avatar">
-        <div class="avatar-hair"></div>
-        <div class="avatar-head">
-          <div class="eyes"><span></span><span></span></div>
-          <div class="smile"></div>
-        </div>
-        <div class="avatar-body"></div>
-        <div class="avatar-shorts"></div>
-        <div class="avatar-legs">
-          <span></span><span></span>
+    <!-- 3. MAIN WORLD HUB (Главная страница с феей и меню) -->
+    <section id="worldScreen" class="screen hidden">
+      <div class="world-welcome-card">
+        <div class="fairy-avatar-container">
+          <div class="fairy-anim">🧚‍♀️✨</div>
+          <div class="fairy-speech-bubble" id="fairyMainSpeech">
+            Hello, <span id="worldChildName">friend</span>! I'm your Tooth Fairy. Let's start with our Brushing Education! 💖
+          </div>
         </div>
       </div>
 
-      <div class="creator-options">
-        <h3>🌸 Skin color</h3>
-        <div class="choices">
-          <button type="button" class="color-choice skin active" data-group="skin" data-color="#f5c7a5" style="background:#f5c7a5"></button>
-          <button type="button" class="color-choice skin" data-group="skin" data-color="#dfaa7c" style="background:#dfaa7c"></button>
-          <button type="button" class="color-choice skin" data-group="skin" data-color="#bd805b" style="background:#bd805b"></button>
-          <button type="button" class="color-choice skin" data-group="skin" data-color="#875638" style="background:#875638"></button>
-          <button type="button" class="color-choice skin" data-group="skin" data-color="#633e2e" style="background:#633e2e"></button>
-        </div>
+      <div class="world-menu-grid">
+        <button class="hub-card primary-card" onclick="startEducationFlow()">
+          <span class="hub-icon">🎓</span>
+          <h3>Brushing Education</h3>
+          <p>14 Interactive Steps & Jaw Learning</p>
+        </button>
 
-        <h3>💇 Hair color</h3>
-        <div class="choices">
-          <button type="button" class="color-choice active" data-group="hair" data-color="#593b2e" style="background:#593b2e"></button>
-          <button type="button" class="color-choice" data-group="hair" data-color="#241b19" style="background:#241b19"></button>
-          <button type="button" class="color-choice" data-group="hair" data-color="#d6a15e" style="background:#d6a15e"></button>
-          <button type="button" class="color-choice" data-group="hair" data-color="#c66c4e" style="background:#c66c4e"></button>
-          <button type="button" class="color-choice" data-group="hair" data-color="#e8c4a0" style="background:#e8c4a0"></button>
-        </div>
+        <button class="hub-card" onclick="openScreen('streakScreen')">
+          <span class="hub-icon">🔥</span>
+          <h3>Daily Streaks (Streak)</h3>
+          <p>Morning & Night 2-min Timers</p>
+        </button>
 
-        <h3>👀 Eye color</h3>
-        <div class="choices">
-          <button type="button" class="color-choice active" data-group="eyes" data-color="#65432d" style="background:#65432d"></button>
-          <button type="button" class="color-choice" data-group="eyes" data-color="#4389b9" style="background:#4389b9"></button>
-          <button type="button" class="color-choice" data-group="eyes" data-color="#4b9562" style="background:#4b9562"></button>
-          <button type="button" class="color-choice" data-group="eyes" data-color="#777777" style="background:#777777"></button>
-        </div>
+        <button class="hub-card" onclick="openScreen('jawExploreScreen')">
+          <span class="hub-icon">🦷</span>
+          <h3>Explore Human Jaw</h3>
+          <p>Learn incisors, molars & play puzzles</p>
+        </button>
 
-        <h3>👗 Choose an outfit</h3>
-        <div class="outfit-choices">
-          <button type="button" class="outfit-choice active" data-outfit="shirt">👕 Shirt & shorts</button>
-          <button type="button" class="outfit-choice" data-outfit="dress">👗 Dress</button>
-        </div>
-
-        <h3>🎨 Outfit color</h3>
-        <div class="choices">
-          <button type="button" class="color-choice outfit-color active" data-group="outfit" data-color="#a88be0" style="background:#a88be0"></button>
-          <button type="button" class="color-choice outfit-color" data-group="outfit" data-color="#f29eb7" style="background:#f29eb7"></button>
-          <button type="button" class="color-choice outfit-color" data-group="outfit" data-color="#82cdb5" style="background:#82cdb5"></button>
-          <button type="button" class="color-choice outfit-color" data-group="outfit" data-color="#f2c66d" style="background:#f2c66d"></button>
-          <button type="button" class="color-choice outfit-color" data-group="outfit" data-color="#83b8e8" style="background:#83b8e8"></button>
-        </div>
+        <button class="hub-card" onclick="openScreen('houseScreen')">
+          <span class="hub-icon">🏡</span>
+          <h3>My House & Shop</h3>
+          <p>Decorate rooms & buy accessories</p>
+        </button>
       </div>
-
-      <button id="finishButton">This is my character! 💗</button>
     </section>
 
-    <!-- FINISH SCREEN -->
-    <section id="finishScreen" class="hidden">
-      <div class="fairy">🧚‍♀️✨</div>
-      <h1>Welcome to ToothTales!</h1>
-      <div id="finalAvatar" class="avatar"></div>
-      <h2 id="welcomeName"></h2>
-      <p>Your magical adventure is ready to begin!</p>
-      <div class="reward">⭐ <span id="totalCoinsDisplay">0</span> coins</div>
-      <button id="continueButton">Let's go! 🚀</button>
-    </section>
-
-    <!-- SNACK TIME -->
-    <section id="mealScreen" class="hidden">
-      <h1>🍎 Snack Time!</h1>
-      <div class="fairy">🧚‍♀️</div>
-      <h2>Let's have a little snack!</h2>
-      <p>Choose what you want to eat.</p>
-
-      <div class="snack-options">
-        <button onclick="chooseSnack('Apple', '🍎')">🍎 Apple</button>
-        <button onclick="chooseSnack('Cookie', '🍪')">🍪 Cookie</button>
-        <button onclick="chooseSnack('Bread', '🍞')">🍞 Bread</button>
-        <button onclick="chooseSnack('Cheese', '🧀')">🧀 Cheese</button>
+    <!-- 4. EDUCATION & JAW BRUSHING (14 уровней обучения с челюстью) -->
+    <section id="educationScreen" class="screen hidden">
+      <div class="edu-top-bar">
+        <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
+        <span id="eduLevelIndicator" class="level-indicator">Step 1 of 14</span>
+        <span class="coins-earned">🪙 <span id="eduCoinsCount">0</span></span>
       </div>
 
-      <p id="snackMessage">Choose your snack! 💗</p>
-      <button onclick="finishSnack()">I'm ready to brush! ✨</button>
-    </section>
-
-    <!-- BRUSH & RESCUE (Анатомическая человеческая челюсть с резцами и коренными) -->
-    <section id="rescueScreen" class="hidden">
-      <h1>🦷 Brush & Rescue!</h1>
-      <div class="fairy">🧚‍♀️</div>
-      <h2 id="rescueSubtitle">Oh! Food got stuck between teeth!</h2>
-      <p id="rescueCry" class="speech-bubble">«AAAHH! HELP! Rescue us, or we'll decay the tooth! 😭»</p>
-
-      <div id="rescueMouth" class="human-mouth-container">
-        <!-- Верхняя челюсть: резцы в центре, моляры/премоляры по бокам -->
-        <div class="jaw-arch upper">
-          <div class="tooth-item molar"></div>
-          <div class="tooth-item premolar"></div>
-          <div class="tooth-item incisor"></div>
-          <div class="tooth-item incisor"></div>
-          <div class="tooth-item incisor"></div>
-          <div class="tooth-item incisor"></div>
-          <div class="tooth-item premolar"></div>
-          <div class="tooth-item molar"></div>
+      <div class="edu-layout">
+        <!-- Левая колонка: шаги (структура уровней) -->
+        <div class="edu-sidebar">
+          <h3>🌟 14 Brushing Steps</h3>
+          <div id="eduStepsList" class="edu-steps-list"></div>
         </div>
 
-        <!-- Нижняя челюсть -->
-        <div class="jaw-arch lower">
-          <div class="tooth-item molar"></div>
-          <div class="tooth-item premolar"></div>
-          <div class="tooth-item incisor"></div>
-          <div class="tooth-item incisor"></div>
-          <div class="tooth-item incisor"></div>
-          <div class="tooth-item incisor"></div>
-          <div class="tooth-item premolar"></div>
-          <div class="tooth-item molar"></div>
-        </div>
+        <!-- Правая колонка: интерактив на анатомической челюсти -->
+        <div class="edu-main-content">
+          <h2 id="eduStepTitle">Step 1</h2>
+          <p id="eduStepDesc">Instruction description goes here.</p>
 
-        <!-- Строго выбранные кусочки еды -->
-        <div id="foodCrumbs" class="food-crumbs">
-          <span class="crumb dynamic-crumb">🍎</span>
-          <span class="crumb dynamic-crumb">🍎</span>
-          <span class="crumb dynamic-crumb">🍎</span>
-        </div>
-
-        <div id="toothbrush" class="toothbrush-realistic">🪥</div>
-      </div>
-
-      <div class="rescue-basket">
-        🧺 Rescued food: <span id="rescuedCount">0</span>/3 (+30 coins! ⭐)
-      </div>
-
-      <p id="rescueMessage">Move your toothbrush over the food to save them!</p>
-      <button id="rescueDone" onclick="startAcademy()" disabled>
-        Go to Tooth Academy! ✨
-      </button>
-    </section>
-
-    <!-- TOOTH ACADEMY (14 пунктов с челюстью, выдавливанием пасты и монетами) -->
-    <section id="academyScreen" class="hidden">
-      <h1>🦷 Tooth Academy</h1>
-      <div class="fairy">🧚‍♀️✨</div>
-      
-      <div class="academy-layout">
-        <!-- Инструкция и интерактив -->
-        <div class="academy-box">
-          <h2 id="academyTitle">Step 1</h2>
-          <p id="academyDesc">Pick up your toothbrush.</p>
-          
-          <div id="academyInteractiveArea" class="academy-interactive">
-            <!-- Динамические элементы (тюбик пасты для Шага 2) -->
+          <div id="eduInteractiveContainer" class="edu-interactive-box">
+            <!-- Динамический инпут: выдавить пасту, почистить резцы и т.д. -->
           </div>
 
-          <button id="academyActionBtn" onclick="performAcademyAction()">Done! (+10 ⭐)</button>
-        </div>
-
-        <!-- Наша анатомическая челюсть для выполнения уроков в реальном времени -->
-        <div class="academy-mouth-preview">
-          <div class="human-mouth-container mini">
-            <div class="jaw-arch upper">
-              <div class="tooth-item molar"></div><div class="tooth-item incisor"></div><div class="tooth-item incisor"></div><div class="tooth-item incisor"></div><div class="tooth-item incisor"></div><div class="tooth-item molar"></div>
+          <!-- Наша детальная человеческая челюсть с резцами и молярами -->
+          <div class="human-jaw-board">
+            <div class="jaw-row upper-jaw">
+              <span class="jaw-tooth molar">Molar</span>
+              <span class="jaw-tooth premolar">Premolar</span>
+              <span class="jaw-tooth incisor">Incisor</span>
+              <span class="jaw-tooth incisor">Incisor</span>
+              <span class="jaw-tooth incisor">Incisor</span>
+              <span class="jaw-tooth incisor">Incisor</span>
+              <span class="jaw-tooth premolar">Premolar</span>
+              <span class="jaw-tooth molar">Molar</span>
             </div>
-            <div class="jaw-arch lower">
-              <div class="tooth-item molar"></div><div class="tooth-item incisor"></div><div class="tooth-item incisor"></div><div class="tooth-item incisor"></div><div class="tooth-item incisor"></div><div class="tooth-item molar"></div>
+            <div class="jaw-row lower-jaw">
+              <span class="jaw-tooth molar">Molar</span>
+              <span class="jaw-tooth premolar">Premolar</span>
+              <span class="jaw-tooth incisor">Incisor</span>
+              <span class="jaw-tooth incisor">Incisor</span>
+              <span class="jaw-tooth incisor">Incisor</span>
+              <span class="jaw-tooth incisor">Incisor</span>
+              <span class="jaw-tooth premolar">Premolar</span>
+              <span class="jaw-tooth molar">Molar</span>
             </div>
-            <div class="academy-brush-indicator" id="academyBrushIndicator">🪥✨</div>
+            <div id="brushCursor" class="interactive-brush">🪥</div>
           </div>
-          <p id="academyTaskStatus" style="font-size: 13px; color: #8c69b5; font-weight: bold; margin-top: 5px;">Follow the instructions above!</p>
+
+          <button class="magical-btn" id="completeStepBtn" onclick="completeEducationStep()">Complete Step & Get +10 Coins ✨</button>
         </div>
       </div>
-
-      <p style="font-size: 14px; color: #9c84b8; margin-top: 15px;">Step <span id="currentStepNum">1</span> of 14</p>
     </section>
 
-    <!-- TOOTHTALES WORLD -->
-    <section id="worldScreen" class="hidden">
-      <div class="world-header">
-        <h1>🦷 ToothTales World</h1>
-        <p>Hello, <span id="worldName">friend</span>! 💗</p>
-        <div class="world-stats">
-          <span>🪙 <span id="coins">0</span></span>
-          <span>🔥 Day <span id="streak">1</span></span>
-        </div>
+    <!-- 5. STREAKS SCREEN (Ежедневный огонёк, таймер утренней и вечерней чистки) -->
+    <section id="streakScreen" class="screen hidden">
+      <div class="edu-top-bar">
+        <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
+        <h2>🔥 Daily Brushing Streaks</h2>
+        <span></span>
       </div>
 
-      <div class="fairy-card">
-        <div class="fairy">🧚‍♀️</div>
-        <h2>Hi, little star!</h2>
-        <p>I'm your Tooth Fairy! Let's take care of your smile!</p>
-      </div>
-
-      <h2>My brushing lights ✨</h2>
-
-      <div class="brushing-cards">
-        <div class="brush-card">
-          <div class="big-icon">☀️</div>
-          <h3>Morning brushing</h3>
-          <div id="morningLight" class="light">⚪</div>
-          <button onclick="startBrushing('morning')">Brush my teeth!</button>
+      <div class="streak-card-container">
+        <div class="streak-counter-box">
+          <span class="fire-big">🔥</span>
+          <h2>Current Streak: <span id="streakDaysNum">0</span> Days</h2>
+          <p>Brush every morning and night to keep your streak burning!</p>
         </div>
 
-        <div class="brush-card">
-          <div class="big-icon">🌙</div>
-          <h3>Night brushing</h3>
-          <div id="nightLight" class="light">⚪</div>
-          <button onclick="startBrushing('night')">Brush my teeth!</button>
+        <div class="timers-grid">
+          <!-- Morning Timer -->
+          <div class="timer-box">
+            <h3>☀️ Morning Brushing</h3>
+            <p id="morningStatus">Status: Not done today</p>
+            <div class="timer-display" id="morningTimerDisplay">02:00</div>
+            <button class="magical-btn" id="startMorningTimerBtn" onclick="startBrushingTimer('morning')">Start 2-Min Timer ⏱️</button>
+          </div>
+
+          <!-- Night Timer -->
+          <div class="timer-box">
+            <h3>🌙 Night Brushing</h3>
+            <p id="nightStatus">Status: Not done today</p>
+            <div class="timer-display" id="nightTimerDisplay">02:00</div>
+            <button class="magical-btn" id="startNightTimerBtn" onclick="startBrushingTimer('night')">Start 2-Min Timer ⏱️</button>
+          </div>
         </div>
       </div>
+    </section>
 
-      <div id="brushMessage">
-        Your magical adventure starts here! 💕
+    <!-- 6. EXPLORE JAW & PUZZLES SCREEN -->
+    <section id="jawExploreScreen" class="screen hidden">
+      <div class="edu-top-bar">
+        <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
+        <h2>🦷 Human Jaw Anatomy & Puzzles</h2>
+        <span></span>
+      </div>
+      <div class="explore-content-box">
+        <h3>Know your teeth!</h3>
+        <p>Incisors cut food, Canines tear food, and Molars crush and grind food!</p>
+        <div class="puzzle-mini-card">
+          <h4>🧩 Tooth Puzzle Challenge</h4>
+          <p id="puzzleQuestion">Match the tooth name: Which teeth are in the very front used for biting?</p>
+          <div class="puzzle-options" id="puzzleOptions">
+            <button onclick="answerPuzzle(true)">Incisors ✨</button>
+            <button onclick="answerPuzzle(false)">Molars</button>
+          </div>
+          <p id="puzzleResult" style="font-weight: bold; margin-top: 10px;"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. HOUSE & SHOP SCREEN (Мой дом и магазин мебели) -->
+    <section id="houseScreen" class="screen hidden">
+      <div class="edu-top-bar">
+        <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
+        <h2>🏡 My House & Shop</h2>
+        <span>🪙 Coins: <span id="shopCoins">0</span></span>
+      </div>
+
+      <div class="house-container">
+        <div class="house-room" id="myRoom">
+          <h3>Your Cozy Room</h3>
+          <div id="placedDecorations" class="placed-decorations">🛏️ (Empty room - buy items below!)</div>
+        </div>
+
+        <div class="shop-panel">
+          <h3>🛍️ Furniture & Wallpaper Shop</h3>
+          <div class="shop-items-grid">
+            <div class="shop-item">
+              <span>🧸 Cute Teddy Bear (50 coins)</span>
+              <button onclick="buyItem('Teddy Bear', 50)">Buy</button>
+            </div>
+            <div class="shop-item">
+              <span>🪴 House Plant (30 coins)</span>
+              <button onclick="buyItem('House Plant', 30)">Buy</button>
+            </div>
+            <div class="shop-item">
+              <span>🖼️ Starry Wallpaper (100 coins)</span>
+              <button onclick="buyItem('Starry Wallpaper', 100)">Buy</button>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -290,6 +291,5 @@
   <footer>Made with 💗 for little smiles</footer>
 
   <script src="script.js"></script>
-
 </body>
 </html>
