@@ -7,12 +7,14 @@ let child = {
   eyes: "#65432d",
   outfit: "#a88be0",
   clothes: "shirt",
-  coins: 0,
+  coins: 100, // Даем стартовый бонус 100 монеток для проверки магазина!
   streak: 0,
   lastBrushDate: "",
   morningDone: false,
   nightDone: false,
-  inventory: []
+  inventory: [],
+  currentWallColor: "#fdfcff",
+  currentCarpet: "none"
 };
 
 function loadProfile() {
@@ -20,9 +22,8 @@ function loadProfile() {
   if (saved) {
     try {
       child = JSON.parse(saved);
-    } catch(e) {
-      console.error(e);
-    }
+      if (typeof child.coins === 'undefined') child.coins = 100;
+    } catch(e) { console.error(e); }
   }
 }
 
@@ -46,7 +47,7 @@ function openScreen(screenId) {
   }
 }
 
-// --- Profile & Character Creator ---
+// --- Profile & Creator ---
 const avatar = document.getElementById("avatar");
 
 function updateAvatarDisplay() {
@@ -75,9 +76,7 @@ document.querySelectorAll(".outfit-choice").forEach(btn => {
   });
 });
 
-document.getElementById("startAdventureBtn").addEventListener("click", () => {
-  openScreen("profileScreen");
-});
+document.getElementById("startAdventureBtn").addEventListener("click", () => openScreen("profileScreen"));
 
 document.getElementById("profileForm").addEventListener("submit", (e) => {
   e.preventDefault();
@@ -91,119 +90,59 @@ document.getElementById("profileForm").addEventListener("submit", (e) => {
 });
 
 
-// --- 14 Levels Education Flow with Finger-Draggable Toothbrush ---
-const educationSteps = [
-  { title: "Step 1: Pick up toothbrush 🪥", desc: "Drag the toothbrush to pick it up and hold it.", action: "normal" },
-  { title: "Step 2: Squeeze toothpaste ✨", desc: "Tap the tube to put magical fluoride paste on your brush.", action: "paste" },
-  { title: "Step 3: Top teeth — outside 🦷", desc: "Move your brush left and right on the upper outer teeth.", action: "normal" },
-  { title: "Step 4: Top teeth — inside 🌟", desc: "Carefully move the brush on the inner side of upper teeth.", action: "normal" },
-  { title: "Step 5: Top teeth — chewing surface 🍪", desc: "Scrub back and forth right on top of upper molars.", action: "normal" },
-  { title: "Step 6: Bottom teeth — outside 😁", desc: "Move your brush left and right on lower outer teeth.", action: "normal" },
-  { title: "Step 7: Bottom teeth — inside ✨", desc: "Gently move the brush on the inner side of lower teeth.", action: "normal" },
-  { title: "Step 8: Bottom teeth — chewing surface 🥞", desc: "Scrub back and forth on lower chewing molars.", action: "normal" },
-  { title: "Step 9: Rescue trapped food 🍎", desc: "Brush over food particles stuck between teeth to clear them.", action: "normal" },
-  { title: "Step 10: Brush your tongue 👅", desc: "Move the brush gently across your tongue for fresh breath.", action: "normal" },
-  { title: "Step 11: Spit out foam 💧", desc: "Tap the sink button to spit out the foam safely.", action: "spit" },
-  { title: "Step 12: Rinse your mouth 🥤", desc: "Tap the cup of water to rinse your mouth thoroughly.", action: "rinse" },
-  { title: "Step 13: Wash your brush 🚿", desc: "Move your brush under running water to clean it.", action: "normal" },
-  { title: "Step 14: Smile! ✨", desc: "Flash a brilliant, glowing clean smile with healthy teeth!", action: "normal" }
+// --- Brushing & Cleaning Flow ---
+const brushingSteps = [
+  { title: "Step 1: Apply Toothpaste", desc: "Drag the toothpaste onto your toothbrush to apply paste!" },
+  { title: "Step 2: Brush Upper & Lower Teeth", desc: "Use your finger to move the toothbrush all over the teeth." },
+  { title: "Step 3: Rinse with Water", desc: "Drag the water cup to rinse your mouth clean." }
 ];
 
-let currentEduStep = 0;
-let stepDoneStatus = new Array(educationSteps.length).fill(false);
+let currentBrushStep = 0;
+let hasPaste = false;
+let hasRinsed = false;
 
 function startEducationFlow() {
-  currentEduStep = 0;
-  stepDoneStatus.fill(false);
+  currentBrushStep = 0;
+  hasPaste = false;
+  hasRinsed = false;
   openScreen("educationScreen");
-  renderEducationStep();
-  renderEduSidebar();
+  updateBrushStepUI();
 }
 
-function renderEduSidebar() {
-  const list = document.getElementById("eduStepsList");
-  list.innerHTML = "";
-  educationSteps.forEach((st, idx) => {
-    const div = document.createElement("div");
-    div.className = "edu-step-item";
-    if (idx === currentEduStep) div.classList.add("active");
-    if (stepDoneStatus[idx]) div.classList.add("done");
-    div.textContent = `Step ${idx + 1}: ${st.title.split(":")[1] || st.title}`;
-    list.appendChild(div);
-  });
-}
-
-function renderEducationStep() {
-  const st = educationSteps[currentEduStep];
-  document.getElementById("eduLevelIndicator").textContent = `Step ${currentEduStep + 1} of 14`;
+function updateBrushStepUI() {
+  document.getElementById("eduLevelIndicator").textContent = `Step ${currentBrushStep + 1} of ${brushingSteps.length}`;
   document.getElementById("eduCoinsCount").textContent = child.coins;
-  document.getElementById("eduStepTitle").textContent = st.title;
-  document.getElementById("eduStepDesc").textContent = st.desc;
-
-  const box = document.getElementById("eduInteractiveContainer");
-  box.innerHTML = "";
-  const btn = document.getElementById("completeStepBtn");
-  btn.style.display = "inline-block";
-
-  // Интерактив для выдавливания пасты (Шаг 2)
-  if (st.action === "paste") {
-    btn.style.display = "none";
-    const pasteBtn = document.createElement("button");
-    pasteBtn.className = "magical-btn";
-    pasteBtn.textContent = "Squeeze Toothpaste Tube 🪥✨";
-    pasteBtn.onclick = () => {
-      pasteBtn.textContent = "Toothpaste squeezed successfully! 💙";
-      setTimeout(completeEducationStep, 600);
-    };
-    box.appendChild(pasteBtn);
-  } 
-  // Интерактив для сплевывания (Шаг 11)
-  else if (st.action === "spit") {
-    btn.style.display = "none";
-    const spitBtn = document.createElement("button");
-    spitBtn.className = "magical-btn";
-    spitBtn.textContent = "Tap Sink to Spit 💧";
-    spitBtn.onclick = () => {
-      spitBtn.textContent = "Clean foam spat out! ✨";
-      setTimeout(completeEducationStep, 600);
-    };
-    box.appendChild(spitBtn);
-  }
-  // Интерактив для полоскания (Шаг 12)
-  else if (st.action === "rinse") {
-    btn.style.display = "none";
-    const rinseBtn = document.createElement("button");
-    rinseBtn.className = "magical-btn";
-    rinseBtn.textContent = "Drink Water & Rinse 🥤";
-    rinseBtn.onclick = () => {
-      rinseBtn.textContent = "Mouth rinsed and fresh! ✨";
-      setTimeout(completeEducationStep, 600);
-    };
-    box.appendChild(rinseBtn);
-  }
-
-  renderEduSidebar();
+  document.getElementById("eduStepTitle").textContent = brushingSteps[currentBrushStep].title;
+  document.getElementById("eduStepDesc").textContent = brushingSteps[currentBrushStep].desc;
 }
 
-function completeEducationStep() {
-  if (!stepDoneStatus[currentEduStep]) {
-    stepDoneStatus[currentEduStep] = true;
-    child.coins += 10; // 10 монеток за каждый уровень
-    saveProfile();
+function nextBrushStep() {
+  if (currentBrushStep === 0 && !hasPaste) {
+    alert("Please apply toothpaste first by dragging it to the toothbrush!");
+    return;
+  }
+  if (currentBrushStep === 2 && !hasRinsed) {
+    alert("Please rinse with water first!");
+    return;
   }
 
-  currentEduStep++;
-  if (currentEduStep < educationSteps.length) {
-    renderEducationStep();
+  currentBrushStep++;
+  child.coins += 20;
+  saveProfile();
+
+  if (currentBrushStep < brushingSteps.length) {
+    updateBrushStepUI();
   } else {
-    alert("🎉 Fantastic! You completed all 14 educational steps and earned 140 coins!");
+    alert("🎉 Brilliant! Brushing complete. You earned 60 coins!");
     openScreen("worldScreen");
   }
 }
 
-// Настройка перетаскивания зубной щетки пальцем/мышкой по челюсти
+// Интерактивное перетаскивание щетки, пасты и воды пальцем
 const toothbrushEl = document.getElementById("draggableToothbrush");
 const mouthBoard = document.getElementById("interactiveMouthBoard");
+const tubeEl = document.getElementById("toothpasteTube");
+const waterEl = document.getElementById("waterCup");
 
 let isDragging = false;
 let startX = 0, startY = 0;
@@ -221,30 +160,45 @@ toothbrushEl.addEventListener("pointermove", (e) => {
   let newX = e.clientX - startX;
   let newY = e.clientY - startY;
 
-  // Ограничиваем движение внутри челюсти
-  const boardRect = mouthBoard.getBoundingClientRect();
+  const tableRect = document.getElementById("brushingTable").getBoundingClientRect();
   const brushRect = toothbrushEl.getBoundingClientRect();
 
-  if (newX >= 0 && newX <= boardRect.width - brushRect.width) {
+  if (newX >= 0 && newX <= tableRect.width - brushRect.width) {
     toothbrushEl.style.left = newX + "px";
   }
-  if (newY >= 0 && newY <= boardRect.height - brushRect.height) {
+  if (newY >= 0 && newY <= tableRect.height - brushRect.height) {
     toothbrushEl.style.top = newY + "px";
+  }
+
+  // Проверка взаимодействия с пастой на Шаге 1
+  if (currentBrushStep === 0 && !hasPaste) {
+    const tubeRect = tubeEl.getBoundingClientRect();
+    if (Math.abs(brushRect.x - tubeRect.x) < 50 && Math.abs(brushRect.y - tubeRect.y) < 50) {
+      hasPaste = true;
+      toothbrushEl.textContent = "🪥✨ (With Paste)";
+      alert("Toothpaste applied to toothbrush! ✨");
+    }
+  }
+
+  // Проверка взаимодействия с водой на Шаге 3
+  if (currentBrushStep === 2 && !hasRinsed) {
+    const waterRect = waterEl.getBoundingClientRect();
+    if (Math.abs(brushRect.x - waterRect.x) < 50 && Math.abs(brushRect.y - waterRect.y) < 50) {
+      hasRinsed = true;
+      alert("Mouth rinsed cleanly with water! 🥤✨");
+    }
   }
 });
 
 function stopDrag(e) {
   isDragging = false;
-  if (e.pointerId) {
-    try { toothbrushEl.releasePointerCapture(e.pointerId); } catch(err){}
-  }
+  if (e.pointerId) { try { toothbrushEl.releasePointerCapture(e.pointerId); } catch(err){} }
 }
-
 toothbrushEl.addEventListener("pointerup", stopDrag);
 toothbrushEl.addEventListener("pointercancel", stopDrag);
 
 
-// --- Streaks & 2-Min Timers ---
+// --- Streaks & Timers ---
 let timerInterval = null;
 
 function checkStreakDate() {
@@ -255,9 +209,7 @@ function checkStreakDate() {
     if (lastDate) {
       const diffTime = Math.abs(currentDate - lastDate);
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if (diffDays > 1) {
-        child.streak = 0;
-      }
+      if (diffDays > 1) child.streak = 0;
     }
   }
   document.getElementById("streakDaysNum").textContent = child.streak;
@@ -270,14 +222,8 @@ function updateTimerUI() {
 }
 
 function startBrushingTimer(session) {
-  if (session === 'morning' && child.morningDone) {
-    alert("You already completed morning brushing today!");
-    return;
-  }
-  if (session === 'night' && child.nightDone) {
-    alert("You already completed night brushing today!");
-    return;
-  }
+  if (session === 'morning' && child.morningDone) { alert("Already done morning brushing today!"); return; }
+  if (session === 'night' && child.nightDone) { alert("Already done night brushing today!"); return; }
 
   let timeLeft = 120;
   const displayEl = document.getElementById(session === 'morning' ? 'morningTimerDisplay' : 'nightTimerDisplay');
@@ -303,7 +249,6 @@ function startBrushingTimer(session) {
 
 function finishBrushingSession(session) {
   const today = new Date().toDateString();
-  
   if (session === 'morning') child.morningDone = true;
   if (session === 'night') child.nightDone = true;
 
@@ -314,13 +259,13 @@ function finishBrushingSession(session) {
 
     if (child.streak % 10 === 0) {
       child.coins += 200;
-      alert(`🌟 Amazing milestone! ${child.streak} days streak! You earned a mega bonus of 200 coins!`);
+      alert(`🌟 Milestone! ${child.streak} days streak! Mega bonus +200 coins!`);
     } else {
-      alert(`🔥 Day streak increased! Current streak: ${child.streak} days. +50 coins!`);
+      alert(`🔥 Streak increased to ${child.streak} days! +50 coins!`);
     }
   } else {
     child.coins += 20;
-    alert(`Great job on your ${session} brushing! +20 coins.`);
+    alert(`Great job! +20 coins.`);
   }
 
   saveProfile();
@@ -328,50 +273,140 @@ function finishBrushingSession(session) {
 }
 
 
-// --- Jaw Anatomy Puzzles ---
-function answerPuzzle(isCorrect) {
-  const res = document.getElementById("puzzleResult");
-  if (isCorrect) {
-    res.textContent = "Correct! Incisors are sharp front teeth used for biting. +15 coins! ✨";
-    res.style.color = "#2e7d32";
-    child.coins += 15;
-    saveProfile();
-  } else {
-    res.textContent = "Not quite! Try again, think about the front teeth.";
-    res.style.color = "#c62828";
-  }
+// --- Jaw Puzzle Game ---
+function startToothPuzzle() {
+  document.getElementById("puzzleContainer").classList.remove("hidden");
+  const slotsBox = document.getElementById("puzzleSlots");
+  const piecesBox = document.getElementById("puzzlePieces");
+  slotsBox.innerHTML = "";
+  piecesBox.innerHTML = "";
+
+  const teethTypes = ["Incisor", "Canine", "Molar"];
+  teethTypes.forEach(type => {
+    const slot = document.createElement("div");
+    slot.className = "puzzle-slot";
+    slot.dataset.expected = type;
+    slot.textContent = `Drop ${type}`;
+    slotsBox.appendChild(slot);
+  });
+
+  // Перемешанные кусочки
+  const shuffled = [...teethTypes].sort(() => Math.random() - 0.5);
+  shuffled.forEach(type => {
+    const piece = document.createElement("div");
+    piece.className = "puzzle-piece";
+    piece.textContent = type;
+    piece.draggable = true;
+    piece.addEventListener("dragstart", (e) => e.dataTransfer.setData("text/plain", type));
+    piecesBox.appendChild(piece);
+  });
+
+  slotsBox.querySelectorAll(".puzzle-slot").forEach(slot => {
+    slot.addEventListener("dragover", (e) => e.preventDefault());
+    slot.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const droppedType = e.dataTransfer.getData("text/plain");
+      if (droppedType === slot.dataset.expected) {
+        slot.textContent = `✅ ${droppedType}`;
+        slot.style.background = "#e2f8e9";
+        child.coins += 10;
+        saveProfile();
+        document.getElementById("puzzleResult").textContent = "Correct match! +10 coins ✨";
+      } else {
+        document.getElementById("puzzleResult").textContent = "Oops, try another slot!";
+      }
+    });
+  });
 }
 
 
-// --- House & Shop ---
-function buyItem(itemName, price) {
+// --- Shop & Room Customization ---
+const shopItems = {
+  walls: [
+    { id: 'wall_pink', name: 'Pink Wall', price: 30, type: 'wall', color: '#ffecf2' },
+    { id: 'wall_blue', name: 'Blue Sky Wall', price: 30, type: 'wall', color: '#e4f2ff' },
+    { id: 'wall_rainbow', name: 'Rainbow Wallpaper (VIP)', price: 150, type: 'wall', color: 'linear-gradient(135deg, #ffcccb, #ffeb99, #ccffcc, #cce6ff)' }
+  ],
+  furniture: [
+    { id: 'sofa', name: 'Cozy Sofa', price: 80, icon: '🛋️' },
+    { id: 'bed', name: 'Cute Bed', price: 90, icon: '🛏️' },
+    { id: 'tv', name: 'Big TV', price: 120, icon: '📺' },
+    { id: 'computer', name: 'Gaming PC', price: 150, icon: '💻' },
+    { id: 'lamp', name: 'Magic Lamp', price: 40, icon: '🏮' },
+    { id: 'kitchen', name: 'Kitchen Unit', price: 200, icon: '🍳' },
+    { id: 'bathroom', name: 'Bath & Sink', price: 180, icon: '🛁' },
+    { id: 'expansion', name: 'Expand Room Space', price: 500, icon: '🏰' }
+  ],
+  garden: [
+    { id: 'rose', name: 'Rose Pot', price: 50, icon: '🌹' },
+    { id: 'ficus', name: 'Big Ficus', price: 70, icon: '🪴' },
+    { id: 'painting', name: 'Art Painting', price: 60, icon: '🖼️' },
+    { id: 'garden_area', name: 'Magical Garden', price: 300, icon: '🌳' }
+  ]
+};
+
+function switchShopTab(category) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  event.target.classList.add("active");
+
+  const panel = document.getElementById("shopPanelContent");
+  panel.innerHTML = "";
+
+  shopItems[category].forEach(item => {
+    const isOwned = child.inventory.includes(item.id);
+    const card = document.createElement("div");
+    card.className = "shop-card";
+    card.innerHTML = `
+      <p>${item.icon || '🎨'} <b>${item.name}</b><br>🪙 ${item.price}</p>
+      <button onclick="buyShopItem('${item.id}', ${item.price}, '${item.type || 'item'}', '${item.color || item.icon}')" ${isOwned && item.type !== 'wall' ? 'disabled' : ''}>
+        ${isOwned && item.type !== 'wall' ? 'Owned' : 'Buy'}
+      </button>
+    `;
+    panel.appendChild(card);
+  });
+}
+
+function buyShopItem(id, price, type, value) {
   if (child.coins < price) {
-    alert("Not enough coins! Complete education steps or daily streaks to earn more.");
+    alert("Not enough coins! Earn more through brushing and daily streaks.");
     return;
   }
+
   child.coins -= price;
-  child.inventory.push(itemName);
+  if (!child.inventory.includes(id) || type === 'wall') {
+    child.inventory.push(id);
+  }
+
+  if (type === 'wall') {
+    child.currentWallColor = value;
+  }
+
   saveProfile();
-  updateHouseDisplay();
-  alert(`Successfully bought ${itemName}! Added to your room.`);
+  updateRoomDisplay();
+  switchShopTab(type === 'wall' ? 'walls' : 'furniture');
+  alert(`Successfully bought!`);
 }
 
-function updateHouseDisplay() {
-  const room = document.getElementById("placedDecorations");
+function updateRoomDisplay() {
+  const room = document.getElementById("myRoom");
+  room.style.background = child.currentWallColor;
+
+  const itemsBox = document.getElementById("roomPreviewItems");
   if (child.inventory.length === 0) {
-    room.textContent = "🛏️ (Empty room - buy items in the shop below!)";
+    itemsBox.textContent = "🛏️ (Empty room. Buy furniture in shop!)";
   } else {
-    room.textContent = "Decorated with: " + child.inventory.join(", ");
+    itemsBox.innerHTML = child.inventory.map(i => `<span style="font-size:28px; margin: 5px;">✨</span>`).join(" ");
   }
 }
 
 
-// --- Init on load ---
+// --- Init ---
 window.addEventListener("DOMContentLoaded", () => {
   loadProfile();
   updateAvatarDisplay();
   checkStreakDate();
-  updateHouseDisplay();
+  updateRoomDisplay();
+  switchShopTab('walls');
   if (child.name) {
     document.getElementById("worldChildName").textContent = child.name;
   }
