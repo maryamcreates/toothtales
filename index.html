@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -148,111 +147,105 @@
       <button id="continueButton">Let's go! 🚀</button>
     </section>
 
+    <!-- SNACK TIME -->
+    <section id="mealScreen" class="hidden">
+      <h1>🍎 Snack Time!</h1>
+      <div class="fairy">🧚‍♀️</div>
+      <h2>Let's have a little snack!</h2>
+      <p>Choose something delicious to eat.</p>
+
+      <div class="snack-options">
+        <button onclick="chooseSnack('🍎 Apple')">🍎 Apple</button>
+        <button onclick="chooseSnack('🍪 Cookie')">🍪 Cookie</button>
+        <button onclick="chooseSnack('🍞 Bread')">🍞 Bread</button>
+        <button onclick="chooseSnack('🧀 Cheese')">🧀 Cheese</button>
+      </div>
+
+      <p id="snackMessage">Choose your snack! 💗</p>
+
+      <button onclick="finishSnack()">I'm ready!</button>
+    </section>
+
+    <!-- BRUSH & RESCUE -->
+    <section id="rescueScreen" class="hidden">
+      <h1>🦷 Brush & Rescue!</h1>
+      <div class="fairy">🧚‍♀️</div>
+      <h2>Oh! Little pieces are stuck!</h2>
+      <p>Let's rescue them from between the teeth!</p>
+
+      <div id="rescueMouth" class="rescue-mouth">
+        <div class="rescue-teeth">
+          <div class="game-tooth"></div>
+          <div class="game-tooth"></div>
+          <div class="game-tooth"></div>
+          <div class="game-tooth"></div>
+          <div class="game-tooth"></div>
+        </div>
+
+        <div id="foodCrumbs" class="food-crumbs">
+          <span class="crumb apple-crumb">🍎</span>
+          <span class="crumb cookie-crumb">🍪</span>
+          <span class="crumb bread-crumb">🍞</span>
+        </div>
+
+        <div id="toothbrush" class="toothbrush">🪥</div>
+      </div>
+
+      <div class="rescue-basket">
+        🧺 Rescued food: <span id="rescuedCount">0</span>/3
+      </div>
+
+      <p id="rescueMessage">Move your toothbrush and rescue the food!</p>
+      <button id="rescueDone" onclick="finishRescue()" disabled>
+        Continue ✨
+      </button>
+    </section>
+
+    <!-- TOOTHTALES WORLD -->
+    <section id="worldScreen" class="hidden">
+      <div class="world-header">
+        <h1>🦷 ToothTales World</h1>
+        <p>Hello, <span id="worldName">friend</span>! 💗</p>
+        <div class="world-stats">
+          <span>🪙 <span id="coins">0</span></span>
+          <span>🔥 Day <span id="streak">1</span></span>
+        </div>
+      </div>
+
+      <div class="fairy-card">
+        <div class="fairy">🧚‍♀️</div>
+        <h2>Hi, little star!</h2>
+        <p>I'm your Tooth Fairy! Let's take care of your smile!</p>
+      </div>
+
+      <h2>My brushing lights ✨</h2>
+
+      <div class="brushing-cards">
+        <div class="brush-card">
+          <div class="big-icon">☀️</div>
+          <h3>Morning brushing</h3>
+          <div id="morningLight" class="light">⚪</div>
+          <button onclick="startBrushing('morning')">Brush my teeth!</button>
+        </div>
+
+        <div class="brush-card">
+          <div class="big-icon">🌙</div>
+          <h3>Night brushing</h3>
+          <div id="nightLight" class="light">⚪</div>
+          <button onclick="startBrushing('night')">Brush my teeth!</button>
+        </div>
+      </div>
+
+      <div id="brushMessage">
+        Your magical adventure starts here! 💕
+      </div>
+    </section>
+
   </main>
 
   <footer>Made with 💗 for little smiles</footer>
 
-
-<!-- SNACK TIME -->
-<section id="mealScreen" class="hidden">
-  <h1>🍎 Snack Time!</h1>
-  <div class="fairy">🧚‍♀️</div>
-  <h2>Let's have a little snack!</h2>
-  <p>Choose something delicious to eat.</p>
-
-  <div class="snack-options">
-    <button onclick="chooseSnack('🍎 Apple')">🍎 Apple</button>
-    <button onclick="chooseSnack('🍪 Cookie')">🍪 Cookie</button>
-    <button onclick="chooseSnack('🍞 Bread')">🍞 Bread</button>
-    <button onclick="chooseSnack('🧀 Cheese')">🧀 Cheese</button>
-  </div>
-
-  <p id="snackMessage">Choose your snack! 💗</p>
-
-  <button onclick="finishSnack()">I'm ready!</button>
-</section>
-
-<!-- BRUSH & RESCUE -->
-<section id="rescueScreen" class="hidden">
-  <h1>🦷 Brush & Rescue!</h1>
-  <div class="fairy">🧚‍♀️</div>
-  <h2>Oh! Little pieces are stuck!</h2>
-  <p>Let's rescue them from between the teeth!</p>
-
-    <div class="rescue-mouth">
-
-    <div class="rescue-teeth">
-      <div class="game-tooth"></div>
-      <div class="game-tooth"></div>
-      <div class="game-tooth"></div>
-      <div class="game-tooth"></div>
-      <div class="game-tooth"></div>
-    </div>
-
-    <div id="foodCrumbs" class="food-crumbs">
-      <span class="crumb apple-crumb">🍎</span>
-      <span class="crumb cookie-crumb">🍪</span>
-      <span class="crumb bread-crumb">🍞</span>
-    </div>
-
-    <div id="toothbrush" class="toothbrush">🪥</div>
-
-  </div>
-  
-
-  <div class="rescue-basket">
-    🧺 Rescued food: <span id="rescuedCount">0</span>/3
-  </div>
-
-  <p id="rescueMessage">Move your toothbrush and rescue the food!</p>
-  <button id="rescueDone" onclick="finishRescue()" disabled>
-    Continue ✨
-  </button>
-</section>
-
-<!-- TOOTHTALES WORLD -->
-<section id="worldScreen" class="hidden">
-  <div class="world-header">
-    <h1>🦷 ToothTales World</h1>
-    <p>Hello, <span id="worldName">friend</span>! 💗</p>
-    <div class="world-stats">
-      <span>🪙 <span id="coins">0</span></span>
-      <span>🔥 Day <span id="streak">1</span></span>
-    </div>
-  </div>
-
-  <div class="fairy-card">
-    <div class="fairy">🧚‍♀️</div>
-    <h2>Hi, little star!</h2>
-    <p>I'm your Tooth Fairy! Let's take care of your smile!</p>
-  </div>
-
-  <h2>My brushing lights ✨</h2>
-
-  <div class="brushing-cards">
-    <div class="brush-card">
-      <div class="big-icon">☀️</div>
-      <h3>Morning brushing</h3>
-      <div id="morningLight" class="light">⚪</div>
-      <button onclick="startBrushing('morning')">Brush my teeth!</button>
-    </div>
-
-    <div class="brush-card">
-      <div class="big-icon">🌙</div>
-      <h3>Night brushing</h3>
-      <div id="nightLight" class="light">⚪</div>
-      <button onclick="startBrushing('night')">Brush my teeth!</button>
-    </div>
-  </div>
-
-  <div id="brushMessage">
-    Your magical adventure starts here! 💕
-  </div>
-</section>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 
 </body>
 </html>
-
-
