@@ -1,324 +1,296 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToothTales 🦷✨</title>
+  <meta name="theme-color" content="#f8eaf1">
+  <title>ToothTales — Little Smiles, Big Adventures</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<header class="site-header">
+  <a class="brand" href="#" onclick="showScreen('home');return false">🦷 <span>ToothTales</span></a>
+  <div class="header-stats">
+    <span>🪙 <b id="coinCount">120</b></span>
+    <span>🔥 <b id="streakCount">0</b></span>
+  </div>
+</header>
 
-  <!-- HEADER -->
-  <header>
-    <div class="header-inner">
-      <h2>🦷 ToothTales</h2>
-      <div class="header-stats" id="headerStats" style="display: none;">
-        <span>🪙 <span id="globalCoins">0</span></span>
-        <span>🔥 <span id="globalStreak">0</span> Days</span>
+<main>
+  <section id="home" class="screen hero">
+    <div class="hero-art">
+      <div class="sparkle s1">✦</div>
+      <div class="hero-tooth">🦷</div>
+      <div class="sparkle s2">✧</div>
+    </div>
+    <p class="eyebrow">A LITTLE WORLD OF HEALTHY SMILES</p>
+    <h1>Big adventures<br><em>start with little smiles.</em></h1>
+    <p class="intro">Meet your tooth fairy, learn about your smile, and make brushing part of your adventure.</p>
+    <button class="primary" onclick="showScreen('profile')">Start my adventure <span>→</span></button>
+    <p class="tiny-note">A gentle, playful learning space for ages 3–8</p>
+  </section>
+
+  <section id="profile" class="screen hidden panel narrow">
+    <button class="back" onclick="showScreen('home')">← Back</button>
+    <p class="eyebrow">YOUR LITTLE EXPLORER</p>
+    <h2>Who is joining us?</h2>
+    <label>Your name
+      <input id="childName" maxlength="16" placeholder="Your name">
+    </label>
+    <label>Age
+      <select id="childAge">
+        <option value="">Choose age</option>
+        <option>3</option><option>4</option><option>5</option>
+        <option>6</option><option>7</option><option>8</option>
+      </select>
+    </label>
+    <label>Choose your favourite colour
+      <select id="avatarColor">
+        <option value="#b99be8">Lavender</option>
+        <option value="#f2a8c2">Rose pink</option>
+        <option value="#8ccdbb">Mint</option>
+        <option value="#f2c66d">Sunny yellow</option>
+        <option value="#8db9e8">Sky blue</option>
+      </select>
+    </label>
+    <button class="primary full" onclick="saveProfile()">Meet my ToothTales world →</button>
+  </section>
+
+  <section id="world" class="screen hidden">
+    <div class="welcome-panel">
+      <div class="fairy">🧚🏻‍♀️</div>
+      <div>
+        <p class="eyebrow">YOUR MAGIC HOME</p>
+        <h2>Hello, <span id="playerName">friend</span>!</h2>
+        <p>Your smile adventure is ready. What shall we explore today?</p>
       </div>
     </div>
-  </header>
 
-  <main id="app">
+    <div class="feature-grid">
+      <button class="feature feature-pink" onclick="showScreen('snack')">
+        <span>🍎</span><b>Snack & Rescue</b>
+        <small>Eat a snack, then rescue the crumbs</small>
+      </button>
+      <button class="feature feature-lilac" onclick="showScreen('academy')">
+        <span>🎓</span><b>Tooth Academy</b>
+        <small>Explore teeth and learn how to brush</small>
+      </button>
+      <button class="feature feature-mint" onclick="openRoom()">
+        <span>🛏️</span><b>My Room</b>
+        <small>Shop, decorate and arrange your room</small>
+      </button>
+      <button class="feature feature-gold" onclick="openStreaks()">
+        <span>⏱️</span><b>Daily Brushing</b>
+        <small>One two-minute timer at a time</small>
+      </button>
+    </div>
 
-    <!-- 1. WELCOME SCREEN -->
-    <section id="welcomeScreen" class="screen">
-      <div class="fairy-welcome">🧚‍♀️✨</div>
-      <div class="tooth-bounce">🦷</div>
-      <h1>Welcome to ToothTales!</h1>
-      <p>Let's make brushing magical, healthy, and fun!</p>
-      <button class="magical-btn" id="startAdventureBtn">Start my adventure! 🚀</button>
-    </section>
-
-    <!-- 2. PROFILE & CREATOR SCREEN -->
-    <section id="profileScreen" class="screen hidden">
-      <div class="fairy-float">🧚‍♀️</div>
-      <h1>Hello, little explorer!</h1>
-      <p>Tell us a bit about yourself and create your character.</p>
-
-      <form id="profileForm">
-        <div class="form-group">
-          <label for="childName">What is your name?</label>
-          <input id="childName" type="text" maxlength="16" placeholder="Your name..." required>
-        </div>
-
-        <div class="form-group">
-          <label for="childAge">How old are you?</label>
-          <select id="childAge" required>
-            <option value="">Choose your age</option>
-            <option value="3">3 years old</option>
-            <option value="4">4 years old</option>
-            <option value="5">5 years old</option>
-            <option value="6">6 years old</option>
-            <option value="7">7 years old</option>
-            <option value="8">8 years old</option>
-          </select>
-        </div>
-
-        <h3>Design your character! ✨</h3>
-        <div class="avatar" id="avatar">
-          <div class="avatar-hair"></div>
-          <div class="avatar-head">
-            <div class="eyes"><span></span><span></span></div>
-            <div class="smile"></div>
-          </div>
-          <div class="avatar-body" id="avatarBodyEl"></div>
-          <div class="avatar-shorts" id="avatarShortsEl"></div>
-          <div class="avatar-legs"><span></span><span></span></div>
-        </div>
-
-        <div class="creator-options">
-          <p>Skin color</p>
-          <div class="choices">
-            <button type="button" class="color-choice skin active" data-group="skin" data-color="#f5c7a5" style="background:#f5c7a5"></button>
-            <button type="button" class="color-choice skin" data-group="skin" data-color="#dfaa7c" style="background:#dfaa7c"></button>
-            <button type="button" class="color-choice skin" data-group="skin" data-color="#bd805b" style="background:#bd805b"></button>
-            <button type="button" class="color-choice skin" data-group="skin" data-color="#875638" style="background:#875638"></button>
-          </div>
-
-          <p>Hair color</p>
-          <div class="choices">
-            <button type="button" class="color-choice active" data-group="hair" data-color="#593b2e" style="background:#593b2e"></button>
-            <button type="button" class="color-choice" data-group="hair" data-color="#241b19" style="background:#241b19"></button>
-            <button type="button" class="color-choice" data-group="hair" data-color="#d6a15e" style="background:#d6a15e"></button>
-            <button type="button" class="color-choice" data-group="hair" data-color="#c66c4e" style="background:#c66c4e"></button>
-          </div>
-
-          <p>Eye color</p>
-          <div class="choices">
-            <button type="button" class="color-choice active" data-group="eyes" data-color="#65432d" style="background:#65432d"></button>
-            <button type="button" class="color-choice" data-group="eyes" data-color="#4389b9" style="background:#4389b9"></button>
-            <button type="button" class="color-choice" data-group="eyes" data-color="#4b9562" style="background:#4b9562"></button>
-          </div>
-
-          <p>Outfit</p>
-          <div class="outfit-choices">
-            <button type="button" class="outfit-choice active" data-outfit="shirt">👕 Shirt & Shorts</button>
-            <button type="button" class="outfit-choice" data-outfit="dress">👗 Dress</button>
-          </div>
-        </div>
-
-        <button type="submit" class="magical-btn">Let's go to ToothTales World! ✨</button>
-      </form>
-    </section>
-
-    <!-- 3. MAIN WORLD HUB -->
-    <section id="worldScreen" class="screen hidden">
-      <div class="world-welcome-card">
-        <div class="fairy-avatar-container">
-          <div class="fairy-anim">🧚‍♀️✨</div>
-          <div class="fairy-speech-bubble" id="fairyMainSpeech">
-            Hello, <span id="worldChildName">friend</span>! Let's take care of your teeth and decorate your cozy home! 💖
-          </div>
-        </div>
+    <div class="avatar-card">
+      <div class="avatar-face" id="avatarFace">😊</div>
+      <div>
+        <b id="avatarGreeting">Your smile buddy</b>
+        <p>Every small step is worth celebrating.</p>
       </div>
+      <span class="star">✦</span>
+    </div>
+  </section>
 
-      <div class="world-menu-grid">
-        <button class="hub-card primary-card" onclick="startEducationFlow()">
-          <span class="hub-icon">🎓</span>
-          <h3>Brushing & Cleaning</h3>
-          <p>Interactive brushing with real paste & water validation</p>
-        </button>
+  <section id="snack" class="screen hidden panel">
+    <button class="back" onclick="showScreen('world')">← World</button>
+    <p class="eyebrow">SNACK TIME</p>
+    <h2>What shall we munch?</h2>
+    <p>Choose a snack for your little explorer.</p>
 
-        <button class="hub-card" onclick="openScreen('streakScreen')">
-          <span class="hub-icon">🔥</span>
-          <h3>Daily Streaks</h3>
-          <p>Morning & Night 2-min Timers</p>
-        </button>
+    <div class="snack-grid">
+      <button class="snack" onclick="chooseSnack('Apple','🍎')">
+        <span>🍎</span><b>Apple</b>
+      </button>
+      <button class="snack" onclick="chooseSnack('Cheese','🧀')">
+        <span>🧀</span><b>Cheese</b>
+      </button>
+      <button class="snack" onclick="chooseSnack('Bread','🍞')">
+        <span>🍞</span><b>Bread</b>
+      </button>
+    </div>
 
-        <button class="hub-card" onclick="openScreen('jawExploreScreen')">
-          <span class="hub-icon">🦷</span>
-          <h3>Explore Human Jaw</h3>
-          <p>Full mouth anatomy, gums, tongue & drag-and-drop puzzle</p>
-        </button>
+    <div class="eating-scene">
+      <div id="eatingAvatar" class="eating-avatar">😊</div>
+      <div id="eatingText">Your buddy is ready for a snack!</div>
+    </div>
+    <button id="afterSnackBtn" class="primary full hidden" onclick="startRescue()">Let's see those tiny crumbs →</button>
+  </section>
 
-        <button class="hub-card" onclick="openScreen('houseScreen')">
-          <span class="hub-icon">🏡</span>
-          <h3>My World & Shop</h3>
-          <p>Buy furniture, wallpapers, carpets & garden</p>
-        </button>
+  <section id="rescue" class="screen hidden panel">
+    <button class="back" onclick="showScreen('world')">← World</button>
+    <p class="eyebrow">BRUSH & RESCUE</p>
+    <h2>Let's rescue every crumb!</h2>
+    <p>Move your finger across the teeth to sweep the snack pieces away.</p>
+
+    <div class="mouth-game" id="mouthGame">
+      <div class="lip top-lip"></div>
+      <div class="gum upper-gum"></div>
+      <div class="teeth upper-teeth">
+        <i></i><i></i><i></i><i></i>
+        <i></i><i></i><i></i><i></i>
       </div>
-    </section>
-
-    <!-- 4. EDUCATION & JAW BRUSHING -->
-    <section id="educationScreen" class="screen hidden">
-      <div class="edu-top-bar">
-        <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
-        <span id="eduLevelIndicator" class="level-indicator">Step 1 of 3</span>
-        <span class="coins-earned">🪙 <span id="eduCoinsCount">0</span></span>
+      <div class="tongue"></div>
+      <div class="teeth lower-teeth">
+        <i></i><i></i><i></i><i></i>
+        <i></i><i></i><i></i><i></i>
       </div>
+      <div class="gum lower-gum"></div>
+      <div class="lip bottom-lip"></div>
 
-      <div class="edu-main-content wide-panel">
-        <h2 id="eduStepTitle">Step 1: Apply Toothpaste</h2>
-        <p id="eduStepDesc">Drag the toothpaste onto your toothbrush to apply paste!</p>
+      <span class="food-crumb crumb-one">🍎</span>
+      <span class="food-crumb crumb-two">🍞</span>
+      <span class="food-crumb crumb-three">🧀</span>
+      <div id="movingBrush" class="moving-brush">🪥</div>
+    </div>
 
-        <div class="brushing-table" id="brushingTable">
-          <div class="tools-tray">
-            <div id="toothpasteTube" class="tool-item"><span class="tool-icon">🧪</span><br>Toothpaste</div>
-            <div id="waterCup" class="tool-item"><span class="tool-icon">🥤</span><br>Water Cup</div>
-          </div>
+    <div class="rescue-progress">
+      <span>Rescued</span>
+      <b><span id="rescuedCount">0</span> / 3</b>
+    </div>
+    <div class="progress-track"><div id="rescueBar"></div></div>
+    <p id="rescueMessage" class="feedback">Drag your brush over each crumb.</p>
+    <button id="rescueContinue" class="primary full" disabled onclick="finishRescue()">All clean! Continue →</button>
+  </section>
 
-          <div class="human-jaw-board" id="interactiveMouthBoard">
-            <div class="jaw-row upper-jaw">
-              <span class="jaw-tooth molar">Molar</span>
-              <span class="jaw-tooth premolar">Premolar</span>
-              <span class="jaw-tooth incisor">Incisor</span>
-              <span class="jaw-tooth incisor">Incisor</span>
-              <span class="jaw-tooth incisor">Incisor</span>
-              <span class="jaw-tooth incisor">Incisor</span>
-              <span class="jaw-tooth premolar">Premolar</span>
-              <span class="jaw-tooth molar">Molar</span>
-            </div>
-            <div class="jaw-row lower-jaw">
-              <span class="jaw-tooth molar">Molar</span>
-              <span class="jaw-tooth premolar">Premolar</span>
-              <span class="jaw-tooth incisor">Incisor</span>
-              <span class="jaw-tooth incisor">Incisor</span>
-              <span class="jaw-tooth incisor">Incisor</span>
-              <span class="jaw-tooth incisor">Incisor</span>
-              <span class="jaw-tooth premolar">Premolar</span>
-              <span class="jaw-tooth molar">Molar</span>
-            </div>
-          </div>
+  <section id="academy" class="screen hidden panel">
+    <button class="back" onclick="showScreen('world')">← World</button>
+    <p class="eyebrow">TOOTH ACADEMY</p>
+    <h2>Meet your amazing mouth</h2>
+    <p>Tap a part of the mouth to learn what it does.</p>
 
-          <div id="draggableToothbrush" class="draggable-toothbrush">🪥</div>
-        </div>
+    <div class="anatomy-wrap">
+      <svg class="anatomy-svg" viewBox="0 0 600 390" role="img" aria-label="Illustration of an open mouth with lips, gums, teeth and tongue">
+        <defs>
+          <linearGradient id="lipG" x1="0" x2="1" y1="0" y2="1">
+            <stop stop-color="#e8879e"/>
+            <stop offset="1" stop-color="#b84f70"/>
+          </linearGradient>
+          <linearGradient id="gumG" x1="0" x2="0" y1="0" y2="1">
+            <stop stop-color="#f5a2ad"/>
+            <stop offset="1" stop-color="#c95f79"/>
+          </linearGradient>
+          <linearGradient id="toothG" x1="0" x2="1" y1="0" y2="1">
+            <stop stop-color="#fffefa"/>
+            <stop offset="1" stop-color="#d9d5cb"/>
+          </linearGradient>
+        </defs>
 
-        <button class="magical-btn" id="nextBrushStepBtn" onclick="nextBrushStep()">Next Step ✨</button>
+        <path d="M55 180 Q300 20 545 180 Q300 370 55 180Z" fill="url(#lipG)" stroke="#a84f6b" stroke-width="8"/>
+        <path d="M85 181 Q300 72 515 181 Q300 302 85 181Z" fill="#5a203d"/>
+        <path d="M100 171 Q300 82 500 171 L477 203 Q300 156 123 203Z" fill="url(#gumG)"/>
+        <path d="M124 204 Q300 174 476 204 L460 229 Q300 210 140 229Z" fill="#b94f6a"/>
+
+        <g fill="url(#toothG)" stroke="#c8c2b9" stroke-width="3">
+          <rect x="142" y="166" width="43" height="73" rx="13"/>
+          <rect x="185" y="151" width="47" height="87" rx="14"/>
+          <rect x="232" y="145" width="54" height="92" rx="14"/>
+          <rect x="286" y="145" width="54" height="92" rx="14"/>
+          <rect x="340" y="151" width="47" height="87" rx="14"/>
+          <rect x="387" y="166" width="43" height="73" rx="13"/>
+        </g>
+
+        <path d="M130 235 Q300 207 470 235 Q445 305 300 314 Q155 305 130 235Z" fill="url(#gumG)"/>
+        <path d="M172 252 Q300 222 428 252 Q405 322 300 326 Q195 322 172 252Z" fill="#e77d91"/>
+        <path d="M202 275 Q300 246 398 275 Q380 329 300 331 Q220 329 202 275Z" fill="#ed9ca9" stroke="#bd637a" stroke-width="3"/>
+
+        <g fill="url(#toothG)" stroke="#c8c2b9" stroke-width="3">
+          <path d="M150 235 Q171 220 192 236 L190 279 Q170 295 151 278Z"/>
+          <path d="M192 232 Q215 219 238 232 L236 285 Q214 299 193 282Z"/>
+          <path d="M238 229 Q263 217 286 229 L285 289 Q262 302 239 286Z"/>
+          <path d="M286 229 Q310 217 334 229 L333 289 Q310 302 287 286Z"/>
+          <path d="M334 232 Q357 219 381 232 L380 285 Q358 299 335 282Z"/>
+          <path d="M381 236 Q402 220 423 235 L422 278 Q403 295 382 279Z"/>
+        </g>
+
+        <g class="hotspot" data-part="Lips">
+          <circle cx="300" cy="75" r="15"/><text x="300" y="50">1</text>
+        </g>
+        <g class="hotspot" data-part="Gums">
+          <circle cx="110" cy="183" r="15"/><text x="110" y="158">2</text>
+        </g>
+        <g class="hotspot" data-part="Teeth">
+          <circle cx="300" cy="187" r="15"/><text x="300" y="162">3</text>
+        </g>
+        <g class="hotspot" data-part="Tongue">
+          <circle cx="300" cy="300" r="15"/><text x="300" y="275">4</text>
+        </g>
+      </svg>
+    </div>
+
+    <div id="anatomyInfo" class="info-card">
+      <b>Choose a number</b>
+      <p>Tap one of the numbered areas to learn about it.</p>
+    </div>
+
+    <h3 class="subheading">🧩 Place the labels</h3>
+    <p>Tap a label, then tap the matching numbered area. No tiny dragging needed.</p>
+    <div id="puzzlePieces" class="puzzle-pieces">
+      <button class="puzzle-piece" data-answer="Lips">Lips</button>
+      <button class="puzzle-piece" data-answer="Gums">Gums</button>
+      <button class="puzzle-piece" data-answer="Teeth">Teeth</button>
+      <button class="puzzle-piece" data-answer="Tongue">Tongue</button>
+    </div>
+    <p id="puzzleFeedback" class="feedback">Choose a label to begin.</p>
+  </section>
+
+  <section id="room" class="screen hidden panel">
+    <button class="back" onclick="showScreen('world')">← World</button>
+    <p class="eyebrow">YOUR LITTLE HOME</p>
+    <h2>Make it yours</h2>
+
+    <div class="room-stage" id="roomStage">
+      <div class="room-window">☀️</div>
+      <div class="room-floor"></div>
+      <div class="room-items" id="roomItems"></div>
+    </div>
+    <p class="hint">Tap an item in your inventory to place it. Drag items around the room to arrange them.</p>
+
+    <div class="room-tabs">
+      <button class="tab active" onclick="showShop('furniture',this)">Furniture</button>
+      <button class="tab" onclick="showShop('decor',this)">Decor</button>
+      <button class="tab" onclick="showShop('wall',this)">Walls</button>
+      <button class="tab" onclick="showShop('inventory',this)">My items</button>
+    </div>
+    <div id="shopGrid" class="shop-grid"></div>
+    <p id="shopMessage" class="feedback" aria-live="polite"></p>
+  </section>
+
+  <section id="streaks" class="screen hidden panel">
+    <button class="back" onclick="showScreen('world')">← World</button>
+    <p class="eyebrow">DAILY SMILE ROUTINE</p>
+    <h2>Two minutes for your smile</h2>
+
+    <div class="streak-summary">
+      🔥 <b><span id="streakDays">0</span> day streak</b>
+      <small>Celebrate each morning and evening.</small>
+    </div>
+
+    <div class="timer-grid">
+      <div class="timer-card">
+        <span>☀️</span><h3>Morning</h3>
+        <p id="morningState">Ready when you are</p>
+        <strong id="morningTime">02:00</strong>
+        <button id="morningStart" class="primary full" onclick="startTimer('morning')">Start morning timer</button>
       </div>
-    </section>
-
-    <!-- 5. STREAKS SCREEN -->
-    <section id="streakScreen" class="screen hidden">
-      <div class="edu-top-bar">
-        <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
-        <h2>🔥 Daily Brushing Streaks</h2>
-        <span></span>
+      <div class="timer-card">
+        <span>🌙</span><h3>Evening</h3>
+        <p id="eveningState">Ready when you are</p>
+        <strong id="eveningTime">02:00</strong>
+        <button id="eveningStart" class="primary full" onclick="startTimer('evening')">Start evening timer</button>
       </div>
+    </div>
 
-      <div class="streak-card-container">
-        <div class="streak-counter-box">
-          <span class="fire-big">🔥</span>
-          <h2>Current Streak: <span id="streakDaysNum">0</span> Days</h2>
-          <p>Brush every morning and night! Big milestones (10, 20, 30 days) give huge coin rewards!</p>
-        </div>
+    <p id="timerMessage" class="feedback">Only one timer can run at a time.</p>
+    <button id="stopTimer" class="secondary full hidden" onclick="stopTimer()">Pause / cancel current timer</button>
+  </section>
+</main>
 
-        <div class="timers-grid">
-          <div class="timer-box">
-            <h3>☀️ Morning Brushing</h3>
-            <p id="morningStatus">Status: Not done today</p>
-            <div class="timer-display" id="morningTimerDisplay">02:00</div>
-            <button class="magical-btn" id="startMorningTimerBtn" onclick="startBrushingTimer('morning')">Start 2-Min Timer ⏱️</button>
-          </div>
-
-          <div class="timer-box">
-            <h3>🌙 Night Brushing</h3>
-            <p id="nightStatus">Status: Not done today</p>
-            <div class="timer-display" id="nightTimerDisplay">02:00</div>
-            <button class="magical-btn" id="startNightTimerBtn" onclick="startBrushingTimer('night')">Start 2-Min Timer ⏱️</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 6. EXPLORE JAW & FULL MOUTH ANATOMY PUZZLE -->
-    <section id="jawExploreScreen" class="screen hidden">
-      <div class="edu-top-bar">
-        <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
-        <h2>🦷 Full Mouth Anatomy & Puzzle</h2>
-        <span></span>
-      </div>
-      <div class="explore-content-box">
-        <div id="anatomyStudyView">
-          <h3>Full Mouth Anatomy Study</h3>
-          <p>Examine the full mouth structure: Upper Jaw, Lower Jaw, Gums, Tongue, Lips, Incisors, Canines, and Molars. Memorize where everything is!</p>
-          
-          <div class="full-mouth-container">
-            <div class="mouth-lips upper-lip">Top Lip 👄</div>
-            <div class="mouth-gums upper-gums">Upper Gums (Pink)</div>
-            <div class="anatomy-jaw-row">
-              <span class="anatomy-tag">Molar</span>
-              <span class="anatomy-tag">Premolar</span>
-              <span class="anatomy-tag">Canine</span>
-              <span class="anatomy-tag">Incisor</span>
-              <span class="anatomy-tag">Incisor</span>
-              <span class="anatomy-tag">Canine</span>
-              <span class="anatomy-tag">Premolar</span>
-              <span class="anatomy-tag">Molar</span>
-            </div>
-            <div class="mouth-tongue">👅 Tongue (Fresh & Clean)</div>
-            <div class="anatomy-jaw-row">
-              <span class="anatomy-tag">Molar</span>
-              <span class="anatomy-tag">Premolar</span>
-              <span class="anatomy-tag">Canine</span>
-              <span class="anatomy-tag">Incisor</span>
-              <span class="anatomy-tag">Incisor</span>
-              <span class="anatomy-tag">Canine</span>
-              <span class="anatomy-tag">Premolar</span>
-              <span class="anatomy-tag">Molar</span>
-            </div>
-            <div class="mouth-gums lower-gums">Lower Gums (Pink)</div>
-            <div class="mouth-lips lower-lip">Bottom Lip 👄</div>
-          </div>
-
-          <button class="magical-btn" onclick="startFullMouthPuzzle()">I memorized it! Start Drag-and-Drop Puzzle 🧩</button>
-        </div>
-
-        <div id="anatomyPuzzleView" class="hidden">
-          <h3>🧩 Assemble the Full Mouth!</h3>
-          <p>Drag the labels to their correct target zones in the mouth!</p>
-          
-          <div class="full-mouth-container puzzle-board">
-            <div class="mouth-lips upper-lip puzzle-drop-zone" data-target="Top Lip">Drop Top Lip Here</div>
-            <div class="mouth-gums upper-gums puzzle-drop-zone" data-target="Upper Gums">Drop Upper Gums Here</div>
-            <div class="puzzle-slot-row">
-              <span class="puzzle-drop-zone" data-target="Molars">Molars</span>
-              <span class="puzzle-drop-zone" data-target="Canines">Canines</span>
-              <span class="puzzle-drop-zone" data-target="Incisors">Incisors</span>
-            </div>
-            <div class="mouth-tongue puzzle-drop-zone" data-target="Tongue">Drop Tongue Here</div>
-            <div class="mouth-gums lower-gums puzzle-drop-zone" data-target="Lower Gums">Drop Lower Gums Here</div>
-            <div class="mouth-lips lower-lip puzzle-drop-zone" data-target="Bottom Lip">Drop Bottom Lip Here</div>
-          </div>
-
-          <div class="puzzle-pieces-pool" id="puzzlePiecesPool">
-            <!-- Драг-элементы заносятся через JS -->
-          </div>
-          <p id="puzzleFeedback" style="font-weight: bold; margin-top: 15px;"></p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 7. HOUSE & SHOP -->
-    <section id="houseScreen" class="screen hidden">
-      <div class="edu-top-bar">
-        <button class="back-btn" onclick="openScreen('worldScreen')">⬅ Back to World</button>
-        <h2>🏡 My World & Shop</h2>
-        <span>🪙 Coins: <span id="shopCoins">0</span></span>
-      </div>
-
-      <div class="house-container">
-        <div class="house-room" id="myRoom" style="background-color: #fdfcff;">
-          <h3>Your Cozy Room & Garden</h3>
-          <div class="room-preview-items" id="roomPreviewItems">🛏️ (Empty room. Buy furniture in shop below!)</div>
-        </div>
-
-        <div class="shop-tabs">
-          <button class="tab-btn active" onclick="switchShopTab('walls')">Walls & Carpets</button>
-          <button class="tab-btn" onclick="switchShopTab('furniture')">Furniture & Tech</button>
-          <button class="tab-btn" onclick="switchShopTab('garden')">Garden & House</button>
-        </div>
-
-        <div class="shop-content-panel" id="shopPanelContent">
-          <!-- Заполняется динамически -->
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <footer>Made with 💗 for little smiles</footer>
-
-  <script src="script.js"></script>
+<footer>Made with care for little smiles · ToothTales</footer>
+<script src="script.js"></script>
 </body>
 </html>
